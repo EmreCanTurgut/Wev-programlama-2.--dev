@@ -12,6 +12,14 @@
     align-items: center;
     background-color: #f8f9fa;
   }
+  .signUp{
+    margin-top: 12px;
+  }
+  a {
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+  }
   
   .container {
     display: flex;
@@ -21,6 +29,7 @@
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    height: 554px;
   }
   
   .form-container {
@@ -70,13 +79,6 @@
     user-select: none;
   }
   
-  .forgot-password {
-    display: inline-block;
-    margin-bottom: 20px;
-    color: #007bff;
-    text-decoration: none;
-    font-size: 14px;
-  }
   
   button {
     width: 100%;

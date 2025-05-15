@@ -1,38 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="container">
-    <div class="form-container">
-      <div class="logo">
-        <img src="../svg/undraw_easter-bunny_1v4n.svg" alt="logo" width="70px">
-      </div>
-      <h2>Welcome back!</h2>
-      <p>Please enter your credentials to sign in!</p>
-      <form>
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="admin@example.com" required />
-
-        <label for="password">Password</label>
-        <div class="password-container">
-          <input type="password" id="password" placeholder="••••••••" required />
-          <span class="toggle-password" onclick="togglePassword()">👁️</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-container">
+        <div class="logo">
+          <img
+            src="../svg/undraw_easter-bunny_1v4n.svg"
+            alt="logo"
+            width="70px"
+          />
         </div>
+        <h2>Welcome back!</h2>
+        <p>Please enter your credentials to sign in!</p>
+        <form>
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="admin@example.com"
+            required
+          />
 
-        <a href="#" class="forgot-password">Forgot password</a>
-        <button type="submit">Sign In</button>
-      </form>
-    </div>
-    <div class="image-container">
-      <img src="../svg/Mutlu bir tavşan elinde havucunu tutarak oturuyor sade bir resim ,beyaz temalarda olacak,yetişkin bi.jpeg" alt="Login Visual"/>
-    </div>
-  </div>
+          <label for="password">Password</label>
+          <div class="password-container">
+            <input
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              required
+            />
+            <span class="toggle-password" onclick="togglePassword()">👁️</span>
+          </div>
 
-  <script src="script.js"></script>
-</body>
+          <button type="submit">Sign In</button>
+          <p class="signUp" >Dont have account yet? <a href="../Register/index.html">Sign up</p></a>
+        </form>
+      </div>
+      <div class="image-container">
+        <img
+          src="../image/Mutlu bir tavşan elinde havucunu tutarak oturuyor sade bir resim ,beyaz temalarda olacak,yetişkin bi.jpeg"
+          alt="Login Visual"
+        />
+      </div>
+    </div>
+  </body>
 </html>
