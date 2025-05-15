@@ -14,10 +14,13 @@ student_bp = Blueprint('student', __name__)
 def create_student():
     db = mongo.db
     data = request.get_json() or {}
-    # expected fields: first_name, last_name, student_number, contact
     required = ['first_name', 'last_name', 'student_number', 'contact']
     if not all(field in data for field in required):
         return jsonify({'msg': 'Missing student fields'}), 400
+
+    # Prevent duplicate student_number
+    if db.students.find_one({'student_number': data['student_number']}):
+        return jsonify({'msg': 'Student number already exists'}), 409
 
     student = {
         'first_name': data['first_name'],
@@ -27,44 +30,35 @@ def create_student():
         'created_at': datetime.datetime.utcnow()
     }
     result = db.students.insert_one(student)
-    return jsonify({'msg': 'Student created', 'id': str(result.inserted_id)}), 201
+    return jsonify({'msg': 'Student created', 'student_number': data['student_number']}), 201
 
-# Get student by ID
+# Get student by student_number
 
 
-@student_bp.route('/<id>', methods=['GET'])
-def get_student(id):
+@student_bp.route('/<student_number>', methods=['GET'])
+def get_student(student_number):
     db = mongo.db
-    try:
-        obj_id = ObjectId(id)
-    except Exception:
-        return jsonify({'msg': 'Invalid ID format'}), 400
-
-    student = db.students.find_one({'_id': obj_id})
+    student = db.students.find_one({'student_number': student_number})
     if not student:
         return jsonify({'msg': 'Student not found'}), 404
     student['_id'] = str(student['_id'])
     return jsonify(student), 200
 
-# Update student
+# Update student by student_number
 
 
-@student_bp.route('/<id>', methods=['PUT'])
+@student_bp.route('/<student_number>', methods=['PUT'])
 @jwt_required()
-def update_student(id):
+def update_student(student_number):
     db = mongo.db
-    try:
-        obj_id = ObjectId(id)
-    except Exception:
-        return jsonify({'msg': 'Invalid ID format'}), 400
-
     data = request.get_json() or {}
     update = {k: v for k, v in data.items() if k in [
-        'first_name', 'last_name', 'student_number', 'contact']}
+        'first_name', 'last_name', 'contact']}
     if not update:
         return jsonify({'msg': 'No valid fields to update'}), 400
 
-    result = db.students.update_one({'_id': obj_id}, {'$set': update})
+    result = db.students.update_one(
+        {'student_number': student_number}, {'$set': update})
     if result.matched_count == 0:
         return jsonify({'msg': 'Student not found'}), 404
     return jsonify({'msg': 'Student updated'}), 200
@@ -75,7 +69,6 @@ def update_student(id):
 @student_bp.route('/', methods=['GET'])
 def list_students():
     db = mongo.db
-    # filters: student_number, first_name, last_name via query params
     query = {}
     for field in ['student_number', 'first_name', 'last_name']:
         value = request.args.get(field)
@@ -88,19 +81,14 @@ def list_students():
         students.append(s)
     return jsonify(students), 200
 
-# Delete student
+# Delete student by student_number
 
 
-@student_bp.route('/<id>', methods=['DELETE'])
+@student_bp.route('/<student_number>', methods=['DELETE'])
 @jwt_required()
-def delete_student(id):
+def delete_student(student_number):
     db = mongo.db
-    try:
-        obj_id = ObjectId(id)
-    except Exception:
-        return jsonify({'msg': 'Invalid ID format'}), 400
-
-    result = db.students.delete_one({'_id': obj_id})
+    result = db.students.delete_one({'student_number': student_number})
     if result.deleted_count == 0:
         return jsonify({'msg': 'Student not found'}), 404
     return jsonify({'msg': 'Student deleted'}), 200
