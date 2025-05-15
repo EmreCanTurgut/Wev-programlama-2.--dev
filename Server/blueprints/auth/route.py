@@ -49,4 +49,5 @@ def login():
         expires_delta=datetime.timedelta(
             seconds=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
     )
-    return jsonify({'access_token': access_token}), 200
+    return jsonify({'token': access_token, 'username': user['username']}), 200
+
