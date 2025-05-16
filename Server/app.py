@@ -1,5 +1,8 @@
 from blueprints.auth.route import auth_bp
 from blueprints.student.route import student_bp
+from blueprints.course.route import course_bp
+from blueprints.grade.route import grade_bp
+from blueprints.outcome.route import outcome_bp
 from extensions.jwt import jwt
 from extensions.mongo import mongo
 from config import Config
@@ -23,6 +26,9 @@ def create_app():
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(student_bp, url_prefix='/api/students')
+    app.register_blueprint(course_bp, url_prefix='/api/courses')
+    app.register_blueprint(grade_bp, url_prefix='/api/grades')
+    app.register_blueprint(outcome_bp, url_prefix='/api')
     return app
 
 
