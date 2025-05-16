@@ -1,56 +1,64 @@
-const form = document.getElementById('lessonForm');
-const tableBody = document.getElementById('lessonTableBody');
-const searchInput = document.getElementById('searchLesson');
+const form = document.getElementById("lessonForm");
+const tableBody = document.getElementById("studentTableBody");
+const searchInput = document.getElementById("searchInput");
 
 let lessons = [];
 
-form.addEventListener('submit', function(e) {
+form.addEventListener("submit", function (e) {
   e.preventDefault();
-
-  const data = new FormData(form);
+  const formData = new FormData(form);
   const lesson = {
-    id: Date.now(),
-    ad: data.get('ad'),
-    kod: data.get('kod'),
-    kredi: data.get('kredi'),
-    ogretimUyesi: data.get('ogretimUyesi')
+    ad: formData.get("ad"),
+    kod: formData.get("kod"),
+    kredi: formData.get("kredi"),
+    ogretimUyesi: formData.get("ogretimUyesi")
   };
-
   lessons.push(lesson);
   form.reset();
-  renderLessons();
+  renderTable();
 });
 
-function renderLessons(filter = '') {
-  tableBody.innerHTML = '';
+function renderTable(filter = "") {
+  tableBody.innerHTML = "";
   lessons
-    .filter(l => l.ad.toLowerCase().includes(filter.toLowerCase()) || l.kod.toLowerCase().includes(filter.toLowerCase()))
-    .forEach(lesson => {
-      const row = document.createElement('tr');
+    .filter((l) => {
+      const full = `${l.ad} ${l.kod} ${l.kredi} ${l.ogretimUyesi}`.toLowerCase();
+      return full.includes(filter.toLowerCase());
+    })
+    .forEach((lesson, index) => {
+      const row = document.createElement("tr");
       row.innerHTML = `
-        <td><input class="form-control form-control-sm" value="${lesson.ad}" onchange="updateLesson(${lesson.id}, 'ad', this.value)"></td>
-        <td><input class="form-control form-control-sm" value="${lesson.kod}" onchange="updateLesson(${lesson.id}, 'kod', this.value)"></td>
-        <td><input class="form-control form-control-sm" type="number" value="${lesson.kredi}" onchange="updateLesson(${lesson.id}, 'kredi', this.value)"></td>
-        <td><input class="form-control form-control-sm" value="${lesson.ogretimUyesi}" onchange="updateLesson(${lesson.id}, 'ogretimUyesi', this.value)"></td>
-        <td><button class="btn btn-sm btn-danger" onclick="deleteLesson(${lesson.id})"><i class="bi bi-trash"></i></button></td>
+        <td>${lesson.ad}</td>
+        <td>${lesson.kod}</td>
+        <td>${lesson.kredi}</td>
+        <td>${lesson.ogretimUyesi}</td>
+        <td>
+          <button class="btn btn-sm btn-warning" onclick="editLesson(${index})">Düzenle</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteLesson(${index})">Sil</button>
+        </td>
       `;
       tableBody.appendChild(row);
     });
 }
 
-function updateLesson(id, key, value) {
-  const lesson = lessons.find(l => l.id === id);
-  if (lesson) lesson[key] = value;
-}
-
-function deleteLesson(id) {
-  const yetkili = confirm("Ders kaydını silmek istediğinize emin misiniz?");
-  if (yetkili) {
-    lessons = lessons.filter(l => l.id !== id);
-    renderLessons(searchInput.value);
+function deleteLesson(index) {
+  if (confirm("Bu dersi silmek istediğinize emin misiniz?")) {
+    lessons.splice(index, 1);
+    renderTable();
   }
 }
 
-searchInput.addEventListener('input', function() {
-  renderLessons(this.value);
+function editLesson(index) {
+  const lesson = lessons[index];
+  const inputs = form.elements;
+  inputs["ad"].value = lesson.ad;
+  inputs["kod"].value = lesson.kod;
+  inputs["kredi"].value = lesson.kredi;
+  inputs["ogretimUyesi"].value = lesson.ogretimUyesi;
+  lessons.splice(index, 1);
+  renderTable();
+}
+
+searchInput.addEventListener("input", (e) => {
+  renderTable(e.target.value);
 });
