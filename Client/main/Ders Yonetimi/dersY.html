@@ -69,17 +69,11 @@
       </div>
 
       <!-- Ders Listesi -->
+      
       <div class="card">
-        <div
-          class="card-header d-flex justify-content-between align-items-center"
-        >
+        <div class="card-header d-flex justify-content-between align-items-center">
           <span>Ders Listesi</span>
-          <input
-            type="text"
-            id="searchLesson"
-            class="form-control w-50"
-            placeholder="Ders ara..."
-          />
+          <input type="text" id="searchInput" class="form-control w-50" placeholder="Öğrenci ara...">
         </div>
         <div class="card-body table-responsive">
           <table class="table table-bordered table-hover">
@@ -92,8 +86,8 @@
                 <th>İşlem</th>
               </tr>
             </thead>
-            <tbody id="lessonTableBody">
-              <!-- JS ile dinamik olarak doldurulacak -->
+            <tbody id="studentTableBody">
+              <!-- Dinamik olarak JS ile eklenecek -->
             </tbody>
           </table>
         </div>
