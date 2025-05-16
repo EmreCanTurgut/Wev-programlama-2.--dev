@@ -3,6 +3,7 @@ from blueprints.student.route import student_bp
 from blueprints.course.route import course_bp
 from blueprints.grade.route import grade_bp
 from blueprints.outcome.route import outcome_bp
+from flask_cors import CORS
 from extensions.jwt import jwt
 from extensions.mongo import mongo
 from config import Config
@@ -23,6 +24,8 @@ def create_app():
 
     mongo.init_app(app)
     jwt.init_app(app)
+
+    CORS(app)
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(student_bp, url_prefix='/api/students')
