@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - Bunny Theme</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <div class="logo">
+        <img src="../svg/undraw_easter-bunny_1v4n.svg" alt="Bunny Icon" />
+      </div>
+      <h2>Let's Get Started!</h2>
+      <p>Create your account to join the fun!</p>
+      <form id="signupForm">
+        <input type="text" placeholder="User Name" required />
+        <input type="email" placeholder="Email" required />
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="Password" required />
+          <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
+        </div>
+        <div class="password-wrapper">
+          <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+          <span class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</span>
+        </div>
+        <button type="submit">Sign Up</button>
+      </form>
+      <p class="footer-text">
+        Already have an account? <a href="../Login/index.html">Sign in</a>
+      </p>
+    </div>
+    <div class="image-container">
+      <img src="../image/Mutlu bir tavşan elinde havucunu tutarak oturuyor sade bir resim ,beyaz temalarda olacak,yetişkin bi.jpeg" alt="Cute Bunny" />
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
