@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Not Girişi ve Raporlama</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="not.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h2 class="text-center mb-4">Not Girişi ve Raporlama</h2>
+
+      <a href="../index.html" class="btn btn-outline-secondary mb-3">
+        <i class="bi bi-arrow-left"></i> Geri
+      </a>
+
+      <!-- Manuel Not Girişi -->
+      <div class="card mb-4">
+        <div class="card-header">Manuel Not Girişi</div>
+        <div class="card-body">
+          <form id="noteForm">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="ogrenciNo"
+                  placeholder="Öğrenci No"
+                  required
+                />
+              </div>
+              <div class="col-md-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="ders"
+                  placeholder="Ders/Seminer Adı"
+                  required
+                />
+              </div>
+              <div class="col-md-2">
+                <input
+                  type="number"
+                  class="form-control"
+                  name="not"
+                  placeholder="Not"
+                  required
+                />
+              </div>
+              <div class="col-md-4 text-end">
+                <button class="btn btn-primary" type="submit">Kaydet</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Excel/CSV Yükleme -->
+      <div class="card mb-4">
+        <div class="card-header">Excel / CSV Yükle</div>
+        <div class="card-body">
+          <input
+            type="file"
+            id="fileInput"
+            accept=".csv"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <!-- Not Listesi -->
+      <div class="card">
+        <div class="card-header">Not Listesi</div>
+        <div class="card-body table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Öğrenci No</th>
+                <th>Ders/Seminer</th>
+                <th>Not</th>
+              </tr>
+            </thead>
+            <tbody id="noteTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="not.js"></script>
+  </body>
+</html>

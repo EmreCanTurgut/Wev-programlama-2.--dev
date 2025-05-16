@@ -20,3 +20,7 @@ body {
     height: 50px;
   }
   
+.box{
+  min-height: 178px;
+  
+}

@@ -7,7 +7,7 @@ function openSection(section) {
         window.location.href = "./Ders Yonetimi/dersY.html"; // Ders sayfasına yönlendir
         break;
       case 'not':
-        window.location.href = "not.html"; // Not girişi sayfasına yönlendir
+        window.location.href = "./Not girisi/not.html"; // Not girişi sayfasına yönlendir
         break;
       default:
         alert("Bilinmeyen işlem");
