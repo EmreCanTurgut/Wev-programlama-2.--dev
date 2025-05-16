@@ -15,8 +15,7 @@
       <h2>Let's Get Started!</h2>
       <p>Create your account to join the fun!</p>
       <form id="signupForm">
-        <input type="text" placeholder="User Name" required />
-        <input type="email" placeholder="Email" required />
+        <input type="email" placeholder="Email" id="email" required />
         <div class="password-wrapper">
           <input type="password" id="password" placeholder="Password" required />
           <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
@@ -25,7 +24,7 @@
           <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
           <span class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</span>
         </div>
-        <button type="submit">Sign Up</button>
+        <button type="submit" id="register-btn">Sign Up</button>
       </form>
       <p class="footer-text">
         Already have an account? <a href="../Login/index.html">Sign in</a>

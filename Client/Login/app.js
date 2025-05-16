@@ -34,7 +34,12 @@ const login = async (event) => {
         const data = await response.json();
         console.log(data);
         localStorage.setItem('token', data.token);
-        localStorage.setItem('user', data.user);
+        localStorage.setItem('user', data.username);
+
+        if(!data.token){
+            alert('Invalid credentials');
+            return;
+        }
         window.location.href = '/Client/main/index.html';
     } catch (error) {
         console.error('Error during login:', error);
