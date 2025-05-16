@@ -6,3 +6,4 @@ function togglePassword(id) {
     input.type = "password";
   }
 }
+

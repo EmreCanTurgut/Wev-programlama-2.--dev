@@ -1,10 +1,10 @@
 function openSection(section) {
     switch (section) {
       case 'ogrenci':
-        window.location.href = "ogrenci.html"; // Öğrenci sayfasına yönlendir
+        window.location.href = "./Student/ogrenci.html"; // Öğrenci sayfasına yönlendir
         break;
       case 'ders':
-        window.location.href = "ders.html"; // Ders sayfasına yönlendir
+        window.location.href = "./Ders Yonetimi/dersY.html"; // Ders sayfasına yönlendir
         break;
       case 'not':
         window.location.href = "not.html"; // Not girişi sayfasına yönlendir

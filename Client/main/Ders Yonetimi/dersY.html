@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ders Yönetimi</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="dersY.css" />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h2 class="m-0 flex-grow-1 text-center">Ders Yönetimi</h2>
+
+      <a href="../index.html" class="btn btn-outline-secondary backarrow ">
+        <i class="bi bi-arrow-left "></i> Geri
+      </a>
+
+      <!-- Yeni Ders Formu -->
+      <div class="card mb-4">
+        <div class="card-header">Yeni Ders Ekle</div>
+        <div class="card-body">
+          <form id="lessonForm">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="ad"
+                  placeholder="Ders Adı"
+                  required
+                />
+              </div>
+              <div class="col-md-4">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="kod"
+                  placeholder="Ders Kodu"
+                  required
+                />
+              </div>
+              <div class="col-md-2">
+                <input
+                  type="number"
+                  class="form-control"
+                  name="kredi"
+                  placeholder="Kredi"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="ogretimUyesi"
+                  placeholder="Öğretim Üyesi"
+                  required
+                />
+              </div>
+            </div>
+            <div class="text-end mt-3">
+              <button type="submit" class="btn btn-primary">Ders Ekle</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Ders Listesi -->
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <span>Ders Listesi</span>
+          <input
+            type="text"
+            id="searchLesson"
+            class="form-control w-50"
+            placeholder="Ders ara..."
+          />
+        </div>
+        <div class="card-body table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Ders Adı</th>
+                <th>Kodu</th>
+                <th>Kredi</th>
+                <th>Öğretim Üyesi</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="lessonTableBody">
+              <!-- JS ile dinamik olarak doldurulacak -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="dersY.JS"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    />
+  </body>
+</html>
