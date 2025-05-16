@@ -11,7 +11,7 @@ form.addEventListener("submit", function (e) {
     ad: formData.get("ad"),
     kod: formData.get("kod"),
     kredi: formData.get("kredi"),
-    ogretimUyesi: formData.get("ogretimUyesi")
+    ogretimUyesi: formData.get("ogretimUyesi"),
   };
   lessons.push(lesson);
   form.reset();
@@ -22,7 +22,8 @@ function renderTable(filter = "") {
   tableBody.innerHTML = "";
   lessons
     .filter((l) => {
-      const full = `${l.ad} ${l.kod} ${l.kredi} ${l.ogretimUyesi}`.toLowerCase();
+      const full =
+        `${l.ad} ${l.kod} ${l.kredi} ${l.ogretimUyesi}`.toLowerCase();
       return full.includes(filter.toLowerCase());
     })
     .forEach((lesson, index) => {
@@ -62,3 +63,24 @@ function editLesson(index) {
 searchInput.addEventListener("input", (e) => {
   renderTable(e.target.value);
 });
+
+// userpanel
+
+const userName = "emrecanturgut@gmail.com";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const usernameDisplay = document.getElementById("usernameDisplay");
+  if (usernameDisplay) {
+    usernameDisplay.textContent = `${userName}`;
+  }
+});
+
+function logout() {
+  const modal = new bootstrap.Modal(document.getElementById("logoutModal"));
+  modal.show();
+}
+
+function ConfirimLogout() {
+  // Burada localStorage temizlenebilir veya oturum sonlandırılabilir
+  window.location.href = "../../Login/index.html";
+}

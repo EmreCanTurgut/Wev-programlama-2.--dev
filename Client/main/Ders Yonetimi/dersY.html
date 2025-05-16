@@ -9,13 +9,69 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="dersY.css" />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      defer
+    ></script>
   </head>
   <body>
+    <!-- Üst Bar: Kullanıcı Adı ve Çıkış -->
+    <div class="container-fluid bg-light py-2 border-bottom">
+      <div class="d-flex justify-content-end align-items-center px-4">
+        <span id="usernameDisplay" class="me-3 fw-semibold user">User</span>
+        <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+          Çıkış
+        </button>
+      </div>
+    </div>
+
+    <!-- Çıkış Onay Modali -->
+    <div
+      class="modal fade"
+      id="logoutModal"
+      tabindex="-1"
+      aria-labelledby="logoutModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="logoutModalLabel">Çıkış Yap</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Kapat"
+            ></button>
+          </div>
+          <div class="modal-body">
+            Oturumunuzu kapatmak istediğinizden emin misiniz?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              İptal
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              onclick="ConfirimLogout()"
+            >
+              Evet, Çıkış Yap
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="container mt-5">
       <h2 class="m-0 flex-grow-1 text-center">Ders Yönetimi</h2>
 
-      <a href="../index.html" class="btn btn-outline-secondary backarrow ">
-        <i class="bi bi-arrow-left "></i> Geri
+      <a href="../index.html" class="btn btn-outline-secondary backarrow">
+        <i class="bi bi-arrow-left"></i> Geri
       </a>
 
       <!-- Yeni Ders Formu -->
@@ -69,11 +125,18 @@
       </div>
 
       <!-- Ders Listesi -->
-      
+
       <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
           <span>Ders Listesi</span>
-          <input type="text" id="searchInput" class="form-control w-50" placeholder="Öğrenci ara...">
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control w-50"
+            placeholder="Öğrenci ara..."
+          />
         </div>
         <div class="card-body table-responsive">
           <table class="table table-bordered table-hover">

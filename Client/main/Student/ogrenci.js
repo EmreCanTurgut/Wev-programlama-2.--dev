@@ -11,7 +11,7 @@ form.addEventListener("submit", function (e) {
     soyad: formData.get("soyad"),
     ogrenciNo: formData.get("ogrenciNo"),
     email: formData.get("email"),
-    telefon: formData.get("telefon")
+    telefon: formData.get("telefon"),
   };
   students.push(student);
   form.reset();
@@ -64,3 +64,24 @@ function editStudent(index) {
 searchInput.addEventListener("input", (e) => {
   renderTable(e.target.value);
 });
+
+// userpanel
+
+const userName = "emrecanturgut@gmail.com";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const usernameDisplay = document.getElementById("usernameDisplay");
+  if (usernameDisplay) {
+    usernameDisplay.textContent = `${userName}`;
+  }
+});
+
+function logout() {
+  const modal = new bootstrap.Modal(document.getElementById("logoutModal"));
+  modal.show();
+}
+
+function ConfirimLogout() {
+  // Burada localStorage temizlenebilir veya oturum sonlandırılabilir
+  window.location.href = "../../Login/index.html";
+}
