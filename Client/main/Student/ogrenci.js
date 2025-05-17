@@ -3,21 +3,50 @@ const tableBody = document.getElementById("studentTableBody");
 const searchInput = document.getElementById("searchInput");
 let students = [];
 
-form.addEventListener("submit", function (e) {
+form.addEventListener("submit", async function (e) {
   e.preventDefault();
   const formData = new FormData(form);
   const student = {
-    ad: formData.get("ad"),
-    soyad: formData.get("soyad"),
-    ogrenciNo: formData.get("ogrenciNo"),
-    email: formData.get("email"),
-    telefon: formData.get("telefon"),
+    first_name: formData.get("ad"),
+    last_name: formData.get("soyad"),
+    student_number: formData.get("ogrenciNo"),
+    contact: formData.get("telefon"),
   };
-  students.push(student);
+  fetch
+  //studenti PUSH la
+  
+  const response = await fetch(
+    'http://127.0.0.1:5000/api/auth/register',
+    {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            first_name:student.first_name,
+            last_name:student.last_name,
+            student_number:student.student_number,
+            contact:student.contact,
+        }),
+    }
+);
+p
+const data = await response.json();
+        console.log(data);
+
+ // students.push(student);
   form.reset();
   renderTable();
 });
 
+students=[{"_id": "6826700fcc60ae844d6e3caf",
+    "first_name": "admin",
+    "last_name": "admin",
+    "student_number": "1564",
+    "contact": "156123"}]
+
+    
+renderTable();
 function renderTable(filter = "") {
   tableBody.innerHTML = "";
   students
@@ -28,11 +57,10 @@ function renderTable(filter = "") {
     .forEach((student, index) => {
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${student.ad}</td>
-        <td>${student.soyad}</td>
-        <td>${student.ogrenciNo}</td>
-        <td>${student.email}</td>
-        <td>${student.telefon}</td>
+        <td>${student.first_name}</td>
+        <td>${student.last_name}</td>
+        <td>${student.student_number}</td> 
+        <td>${student.contact}</td>
         <td>
           <button class="btn btn-sm btn-warning" onclick="editStudent(${index})">Düzenle</button>
           <button class="btn btn-sm btn-danger" onclick="deleteStudent(${index})">Sil</button>
@@ -64,6 +92,12 @@ function editStudent(index) {
 searchInput.addEventListener("input", (e) => {
   renderTable(e.target.value);
 });
+
+
+
+
+
+
 
 // userpanel
 
