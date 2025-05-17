@@ -1,6 +1,4 @@
-// dersY.js
 const form = document.getElementById('lessonForm');
-// Destek için hem courseTableBody hem de eski studentTableBody id'lerini kontrol et
 const tableBody =
     document.getElementById('courseTableBody') ||
     document.getElementById('studentTableBody');
@@ -9,21 +7,16 @@ const searchInput = document.getElementById('searchInput');
 let courses = [];
 let editingCourseCode = null;
 
-// JWT ve API base
 const token = localStorage.getItem('token');
 const apiBase = 'http://127.0.0.1:5000/api/courses';
 
-// Sayfa yüklendiğinde tüm dersleri çek
 document.addEventListener('DOMContentLoaded', () => {
     loadCourses();
 });
 
 async function loadCourses(filter = '') {
     try {
-        if (!tableBody)
-            throw new Error(
-                'Tablo elementi bulunamadı: courseTableBody veya studentTableBody'
-            );
+        if (!tableBody) throw new Error('Tablo elementi bulunamadı');
         const url = filter
             ? `${apiBase}/?code=${encodeURIComponent(filter)}`
             : apiBase + '/';
@@ -34,13 +27,12 @@ async function loadCourses(filter = '') {
             },
         });
         const data = await res.json();
-        if (!res.ok)
-            throw new Error(data.message || 'Dersler yüklenirken hata');
+        if (!res.ok) throw new Error(data.message || 'Dersler yüklenirken hata oluştu.');
         courses = data;
         renderTable(filter);
     } catch (err) {
         console.error(err);
-        alert(err.message);
+        showSnackbar(err.message);
     }
 }
 
@@ -48,23 +40,22 @@ function renderTable(filter = '') {
     tableBody.innerHTML = '';
     courses
         .filter((c) => {
-            const full =
-                `${c.name} ${c.code} ${c.credit} ${c.instructor}`.toLowerCase();
+            const full = `${c.name} ${c.code} ${c.credit} ${c.instructor}`.toLowerCase();
             return full.includes(filter.toLowerCase());
         })
-        .forEach((course) => { 
-            if(course.code ==null) return;
+        .forEach((course) => {
+            if (course.code == null) return;
             const row = document.createElement('tr');
             row.innerHTML = `
-        <td>${course.name}</td>
-        <td>${course.code}</td>
-        <td>${course.credit}</td>
-        <td>${course.instructor}</td>
-        <td>
-          <button class="btn btn-sm btn-warning" onclick="startEdit('${course.code}')">Düzenle</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteCourse('${course.code}')">Sil</button>
-        </td>
-      `;
+                <td>${course.name}</td>
+                <td>${course.code}</td>
+                <td>${course.credit}</td>
+                <td>${course.instructor}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" onclick="startEdit('${course.code}')">Düzenle</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCourse('${course.code}')">Sil</button>
+                </td>
+            `;
             tableBody.appendChild(row);
         });
 }
@@ -103,14 +94,16 @@ form.addEventListener('submit', async (e) => {
                 body: JSON.stringify(payload),
             });
         }
+
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'API hatası');
         form.reset();
         editingCourseCode = null;
+        showSnackbar('Ders başarıyla kaydedildi.');
         loadCourses(searchInput.value);
     } catch (err) {
         console.error(err);
-        alert(err.message);
+        showSnackbar(err.message);
     }
 });
 
@@ -125,10 +118,11 @@ async function deleteCourse(code) {
             const data = await res.json();
             throw new Error(data.message);
         }
+        showSnackbar('Ders silindi.');
         loadCourses(searchInput.value);
     } catch (err) {
         console.error(err);
-        alert(err.message);
+        showSnackbar(err.message);
     }
 }
 
@@ -152,7 +146,23 @@ function logout() {
     const modal = new bootstrap.Modal(document.getElementById('logoutModal'));
     modal.show();
 }
+
 function ConfirimLogout() {
     localStorage.clear();
     window.location.href = '../../Login/index.html';
+}
+
+// Stil içermeyen snackbar fonksiyonu
+function showSnackbar(message) {
+    let snackbar = document.getElementById('snackbar');
+    if (!snackbar) {
+        snackbar = document.createElement('div');
+        snackbar.id = 'snackbar';
+        document.body.appendChild(snackbar);
+    }
+    snackbar.textContent = message;
+    snackbar.classList.add('show');
+    setTimeout(() => {
+        snackbar.classList.remove('show');
+    }, 3000);
 }

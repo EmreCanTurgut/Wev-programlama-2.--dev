@@ -33,7 +33,7 @@ async function loadStudents(filter = '') {
         renderTable(filter);
     } catch (err) {
         console.error(err);
-        alert('Öğrenciler yüklenirken bir hata oluştu.');
+        showSnackbar('Öğrenciler yüklenirken bir hata oluştu.');
     }
 }
 
@@ -112,7 +112,7 @@ form.addEventListener('submit', async (e) => {
         loadStudents(searchInput.value);
     } catch (err) {
         console.error(err);
-        alert(err.message);
+        showSnackbar(err.message);
     }
 });
 
@@ -133,7 +133,7 @@ async function deleteStudent(studentNumber) {
         loadStudents(searchInput.value);
     } catch (err) {
         console.error(err);
-        alert(err.message || 'Silme işlemi başarısız');
+        showSnackbar(err.message || 'Silme işlemi başarısız');
     }
 }
 
@@ -168,3 +168,14 @@ function ConfirimLogout() {
     localStorage.clear();
     window.location.href = '../../Login/index.html';
 }
+
+//shownackbar
+function showSnackbar(message) {
+    const snackbar = document.getElementById("snackbar");
+    snackbar.textContent = message;
+    snackbar.className = "show";
+    setTimeout(() => {
+      snackbar.className = snackbar.className.replace("show", "");
+    }, 3000);
+  }
+  

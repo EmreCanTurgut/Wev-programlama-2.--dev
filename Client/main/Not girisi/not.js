@@ -21,7 +21,7 @@ async function loadNotes() {
         if (!res.ok) throw new Error(data.msg || 'Notlar yüklenirken hata');
         renderNotes(data);
     } catch (err) {
-        alert(err.message);
+        showSnackbar(err.message);
     }
 }
 
@@ -64,7 +64,7 @@ noteForm.addEventListener('submit', async (e) => {
         noteForm.reset();
         loadNotes();
     } catch (err) {
-        alert(err.message);
+        showSnackbar(err.message);
     }
 });
 
@@ -82,11 +82,11 @@ fileInput.addEventListener('change', async () => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.msg);
-        alert(`Yüklendi: ${data.successCount}`);
+        showSnackbar(`Yüklendi: ${data.successCount}`);
         console.log('Upload response:', data);  
         loadNotes();
     } catch (err) {
-        alert(err.message);
+        showSnackbar(err.message);
     }
 });
 
@@ -102,6 +102,16 @@ deleteGrade = async (id) => {
         if (!res.ok) throw new Error(data.msg);
         loadNotes();
     } catch (err) {
-        alert(err.message);
+        showSnackbar(err.message);
     }
 };
+
+function showSnackbar(message) {
+    const snackbar = document.getElementById("snackbar");
+    snackbar.textContent = message;
+    snackbar.className = "show";
+    setTimeout(() => {
+      snackbar.className = snackbar.className.replace("show", "");
+    }, 3000);
+  }
+  

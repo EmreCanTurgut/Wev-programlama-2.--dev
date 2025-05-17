@@ -20,12 +20,12 @@ const register = async (event) => {
     const confirmPasswordValue = confirmPassword.value.trim();
 
     if (passwordValue !== confirmPasswordValue) {
-        alert('Passwords do not match');
+        showSnackbar('Passwords do not match');
         return;
     }
 
     if (!emailValue || !passwordValue) {
-        alert('Please fill in all fields');
+        showSnackbar('Please fill in all fields');
         return;
     }
 
@@ -48,7 +48,7 @@ const register = async (event) => {
         console.log(data.msg);
         if (data.msg !== 'User registered successfully') {
             //!! Emre buralara alert yerine component gelsin hem register hem login için
-            alert(data.msg);
+            showSnackbar(data.msg);
             return;
         }
 
@@ -60,3 +60,14 @@ const register = async (event) => {
 
 const form = document.querySelector('form');
 form.addEventListener('submit', register);
+
+//showsnackbar
+function showSnackbar(message) {
+    const snackbar = document.getElementById("snackbar");
+    snackbar.textContent = message;
+    snackbar.className = "show";
+    setTimeout(() => {
+      snackbar.className = snackbar.className.replace("show", "");
+    }, 3000);
+  }
+  

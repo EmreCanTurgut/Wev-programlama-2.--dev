@@ -1,20 +1,4 @@
-body {
-    background-color: #f8f9fa;
-  }
-  
-  h2 {
-    font-weight: bold;
-  }
-  
-  .card {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  }
-  .backarrow{
-    margin-bottom: 10px;
-  }
-
-  
-  /* The snackbar - position it at the bottom and in the middle of the screen */
+/* The snackbar - position it at the bottom and in the middle of the screen */
 #snackbar {
   visibility: hidden; /* Hidden by default. Visible on click */
   min-width: 250px; /* Set a default minimum width */
