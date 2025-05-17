@@ -58,7 +58,8 @@ fileInput.addEventListener("change", function () {
 
 // userpanel
 
-const userName = "emrecanturgut@gmail.com";
+const userName = localStorage.getItem("user");
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const usernameDisplay = document.getElementById("usernameDisplay");
