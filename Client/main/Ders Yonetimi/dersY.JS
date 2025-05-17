@@ -52,7 +52,8 @@ function renderTable(filter = '') {
                 `${c.name} ${c.code} ${c.credit} ${c.instructor}`.toLowerCase();
             return full.includes(filter.toLowerCase());
         })
-        .forEach((course) => {
+        .forEach((course) => { 
+            if(course.code ==null) return;
             const row = document.createElement('tr');
             row.innerHTML = `
         <td>${course.name}</td>
