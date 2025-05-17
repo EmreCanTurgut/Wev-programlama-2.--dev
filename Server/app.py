@@ -24,6 +24,7 @@ def create_app():
 
     mongo.init_app(app)
     jwt.init_app(app)
+    app.url_map.strict_slashes = False
 
     CORS(app)
 
@@ -31,7 +32,7 @@ def create_app():
     app.register_blueprint(student_bp, url_prefix='/api/students')
     app.register_blueprint(course_bp, url_prefix='/api/courses')
     app.register_blueprint(grade_bp, url_prefix='/api/grades')
-    app.register_blueprint(outcome_bp, url_prefix='/api')
+    app.register_blueprint(outcome_bp, url_prefix='/api/outcomes')
     return app
 
 
