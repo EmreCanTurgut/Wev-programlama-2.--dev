@@ -37,30 +37,42 @@ def upload_grades():
         return jsonify(msg='No file'), 400
     content = file.read()
     try:
-        if file.filename.endswith('.csv'):
+        if file.filename.lower().endswith('.csv'):
             df = pd.read_csv(io.BytesIO(content))
         else:
             df = pd.read_excel(io.BytesIO(content))
-    except:
-        return jsonify(msg='Invalid format'), 400
-    if not set(['student_number', 'course_code', 'grade']).issubset(df.columns):
-        return jsonify(msg='Missing cols'), 400
+    except Exception as e:
+        return jsonify(msg='Invalid file format: ' + str(e)), 400
+
+    # normalize column names
+    df.columns = df.columns.str.strip().str.lower()
+    expected = {'student_number', 'course_code', 'grade'}
+    if not expected.issubset(set(df.columns)):
+        return jsonify(msg=f"Missing columns: {expected - set(df.columns)}"), 400
+
     recs = []
-    for _, r in df.iterrows():
-        if db.students.find_one({'student_number': r['student_number']}) and db.courses.find_one({'code': r['course_code']}):
+    for idx, r in df.iterrows():
+        sn = str(r['student_number']).strip()
+        cc = str(r['course_code']).strip()
+        try:
+            gr = float(r['grade'])
+        except:
+            continue
+        student_exists = db.students.find_one({'student_number': sn})
+        course_exists = db.courses.find_one({'code': cc})
+        if student_exists and course_exists:
             recs.append({
-                'student_number': r['student_number'],
-                'course_code': r['course_code'],
-                'grade': r['grade'],
+                'student_number': sn,
+                'course_code': cc,
+                'grade': gr,
                 'created_at': datetime.datetime.utcnow()
             })
     if recs:
         db.grades.insert_many(recs)
     return jsonify(msg='Batch upload completed', successCount=len(recs)), 200
 
+
 # List grades
-
-
 @grade_bp.route('/grade', methods=['GET'])
 def list_grades():
     db = mongo.db
