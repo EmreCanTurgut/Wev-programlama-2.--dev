@@ -5,110 +5,85 @@ import datetime
 import pandas as pd
 import io
 
-# Blueprint for academic records (grades)
 grade_bp = Blueprint('grade', __name__)
 
-# POST /api/grades/grade - Add a new grade
+# Add grade
 
 
 @grade_bp.route('/grade', methods=['POST'])
-@grade_bp.route('/grade/', methods=['POST'])  # accept trailing slash
 @jwt_required()
 def add_grade():
     db = mongo.db
     data = request.get_json() or {}
-    required = ['student_number', 'course_code', 'grade']
-    if not all(field in data for field in required):
-        return jsonify({'msg': 'Missing grade fields'}), 400
-
+    for f in ('student_number', 'course_code', 'grade'):
+        if f not in data:
+            return jsonify(msg=f"Missing {f}"), 400
     if not db.students.find_one({'student_number': data['student_number']}):
-        return jsonify({'msg': 'Student not found'}), 404
+        return jsonify(msg='Student not found'), 404
     if not db.courses.find_one({'code': data['course_code']}):
-        return jsonify({'msg': 'Course not found'}), 404
+        return jsonify(msg='Course not found'), 404
+    db.grades.insert_one({**data, 'created_at': datetime.datetime.utcnow()})
+    return jsonify(msg='Grade added'), 201
 
-    record = {
-        'student_number': data['student_number'],
-        'course_code': data['course_code'],
-        'grade': data['grade'],
-        'created_at': datetime.datetime.utcnow()
-    }
-    db.grades.insert_one(record)
-    return jsonify({'msg': 'Grade added'}), 201
-
-# POST /api/grades/grade/upload - Batch upload
+# Bulk upload
 
 
 @grade_bp.route('/grade/upload', methods=['POST'])
-@grade_bp.route('/grade/upload/', methods=['POST'])
 @jwt_required()
 def upload_grades():
     db = mongo.db
-    if 'file' not in request.files:
-        return jsonify({'msg': 'No file part'}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'msg': 'No selected file'}), 400
-
-    contents = file.read()
+    file = request.files.get('file')
+    if not file:
+        return jsonify(msg='No file'), 400
+    content = file.read()
     try:
         if file.filename.endswith('.csv'):
-            df = pd.read_csv(io.BytesIO(contents))
+            df = pd.read_csv(io.BytesIO(content))
         else:
-            df = pd.read_excel(io.BytesIO(contents))
-    except Exception:
-        return jsonify({'msg': 'Invalid file format'}), 400
-
+            df = pd.read_excel(io.BytesIO(content))
+    except:
+        return jsonify(msg='Invalid format'), 400
     if not set(['student_number', 'course_code', 'grade']).issubset(df.columns):
-        return jsonify({'msg': 'Missing required columns'}), 400
+        return jsonify(msg='Missing cols'), 400
+    recs = []
+    for _, r in df.iterrows():
+        if db.students.find_one({'student_number': r['student_number']}) and db.courses.find_one({'code': r['course_code']}):
+            recs.append({
+                'student_number': r['student_number'],
+                'course_code': r['course_code'],
+                'grade': r['grade'],
+                'created_at': datetime.datetime.utcnow()
+            })
+    if recs:
+        db.grades.insert_many(recs)
+    return jsonify(msg='Batch upload completed', successCount=len(recs)), 200
 
-    records = []
-    for _, row in df.iterrows():
-        if not db.students.find_one({'student_number': row['student_number']}) \
-           or not db.courses.find_one({'code': row['course_code']}):
-            continue
-        records.append({
-            'student_number': row['student_number'],
-            'course_code': row['course_code'],
-            'grade': row['grade'],
-            'created_at': datetime.datetime.utcnow()
-        })
-    if records:
-        db.grades.insert_many(records)
-    return jsonify({'msg': 'Batch upload completed', 'successCount': len(records)}), 200
-
-# GET /api/grades/grade - List grades
+# List grades
 
 
 @grade_bp.route('/grade', methods=['GET'])
-@grade_bp.route('/grade/', methods=['GET'])
 def list_grades():
     db = mongo.db
-    query = {}
-    for field in ['student_number', 'course_code']:
-        value = request.args.get(field)
-        if value:
-            query[field] = value
-    grades = []
-    for g in db.grades.find(query):
+    q = {k: v for k, v in request.args.items() if k in [
+        'student_number', 'course_code']}
+    out = []
+    for g in db.grades.find(q):
         g['_id'] = str(g['_id'])
-        grades.append(g)
-    return jsonify(grades), 200
+        out.append(g)
+    return jsonify(out), 200
 
-# DELETE /api/grades/grade/<id> - Delete grade
+# Delete grade
 
 
 @grade_bp.route('/grade/<id>', methods=['DELETE'])
-@grade_bp.route('/grade/<id>/', methods=['DELETE'])
 @jwt_required()
 def delete_grade(id):
-    db = mongo.db
     from bson import ObjectId
     try:
-        obj_id = ObjectId(id)
-    except Exception:
-        return jsonify({'msg': 'Invalid ID format'}), 400
-
-    result = db.grades.delete_one({'_id': obj_id})
-    if result.deleted_count == 0:
-        return jsonify({'msg': 'Grade not found'}), 404
-    return jsonify({'msg': 'Grade deleted'}), 200
+        obj = ObjectId(id)
+    except:
+        return jsonify(msg='Invalid ID'), 400
+    res = mongo.db.grades.delete_one({'_id': obj})
+    if not res.deleted_count:
+        return jsonify(msg='Not found'), 404
+    return jsonify(msg='Grade deleted'), 200

@@ -1,6 +1,5 @@
-// not.js
 // Token retrieval
-const token = localStorage.getItem('token');
+token = localStorage.getItem('token');
 
 // Element references
 const noteForm = document.getElementById('noteForm');
@@ -10,58 +9,48 @@ const fileInput = document.getElementById('fileInput');
 // Grade API base
 const gradesApiBase = 'http://127.0.0.1:5000/api/grades/grade';
 
-// Ensure form and table exist
-if (!noteForm || !noteTableBody || !fileInput) {
-    console.error('Required element(s) missing in not.js');
-}
-
-let notes = [];
-
 // On load, fetch all grades
-document.addEventListener('DOMContentLoaded', () => {
-    loadNotes();
-});
+document.addEventListener('DOMContentLoaded', loadNotes);
 
-// Fetch and render grades
 async function loadNotes() {
     try {
         const res = await fetch(gradesApiBase, {
             headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Notlar yüklenirken hata');
-        notes = data;
-        renderNotes();
+        if (!res.ok) throw new Error(data.msg || 'Notlar yüklenirken hata');
+        renderNotes(data);
     } catch (err) {
-        console.error(err);
         alert(err.message);
     }
 }
 
-function renderNotes() {
+function renderNotes(notes) {
     noteTableBody.innerHTML = '';
     notes.forEach((n) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-      <td>${n.student_number}</td>
-      <td>${n.course_code}</td>
-      <td>${n.grade}</td>
-      <td><button class="btn btn-sm btn-danger" onclick="deleteGrade('${n._id}')">Sil</button></td>
+      <td>${n.student_number || ''}</td>
+      <td>${n.course_code || ''}</td>
+      <td>${n.grade ?? ''}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteGrade('${
+          n._id
+      }')">Sil</button></td>
     `;
         noteTableBody.appendChild(tr);
     });
 }
 
-// Handle manual grade submission
+// Manual submission
 noteForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const fd = new FormData(noteForm);
+    const payload = {
+        student_number: fd.get('ogrenciNo'),
+        course_code: fd.get('ders'),
+        grade: parseFloat(fd.get('not')),
+    };
     try {
-        const formData = new FormData(noteForm);
-        const payload = {
-            student_number: formData.get('ogrenciNo'),
-            course_code: formData.get('ders'),
-            grade: parseFloat(formData.get('not')),
-        };
         const res = await fetch(gradesApiBase, {
             method: 'POST',
             headers: {
@@ -71,57 +60,48 @@ noteForm.addEventListener('submit', async (e) => {
             body: JSON.stringify(payload),
         });
         const data = await res.json();
-        if(data.msg !== "Grade added"){
-            alert(data.msg);
-            return;
-        }
+        if (!res.ok) throw new Error(data.msg);
         noteForm.reset();
         loadNotes();
     } catch (err) {
-        console.error(err);
-        alert(data.msg);
+        alert(err.message);
     }
 });
 
-// Handle CSV/Excel bulk upload
+// CSV/Excel bulk upload
 fileInput.addEventListener('change', async () => {
     const file = fileInput.files[0];
     if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
     try {
-        const formData = new FormData();
-        formData.append('file', file);
         const res = await fetch(`${gradesApiBase}/upload`, {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
             body: formData,
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Yükleme hatası');
-        alert(
-            `Yükleme tamamlandı:\nBaşarılı: ${data.successCount}\nHatalı: ${data.errorCount}`
-        );
+        if (!res.ok) throw new Error(data.msg);
+        alert(`Yüklendi: ${data.successCount}`);
+        console.log('Upload response:', data);  
         loadNotes();
     } catch (err) {
-        console.error(err);
         alert(err.message);
     }
 });
 
-// Delete grade function
-window.deleteGrade = async (id) => {
-    if (!confirm('Bu notu silmek istediğinize emin misiniz?')) return;
+// Delete
+deleteGrade = async (id) => {
+    if (!confirm('Emin misiniz?')) return;
     try {
         const res = await fetch(`${gradesApiBase}/${id}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) {
-            const data = await res.json();
-            throw new Error(data.message || 'Silme hatası');
-        }
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.msg);
         loadNotes();
     } catch (err) {
-        console.error(err);
         alert(err.message);
     }
 };
