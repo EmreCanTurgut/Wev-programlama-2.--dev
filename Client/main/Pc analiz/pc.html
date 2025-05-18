@@ -1,11 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Program Çıktısı Gerçekleme Raporu</title>
+  <link rel="stylesheet" href="pc.css" />
 </head>
 <body>
-    zort
+  <div class="container">
+
+    <h1>Program Çıktısı Gerçekleme Raporu</h1>
+
+    <canvas id="pcChart" width="800" height="400"></canvas>
+
+    <div class="buttons">
+      <button id="btnOgrenci">Öğrenci</button>
+      <button id="btnDers">Ders</button>
+      <button id="btnProgram">Program</button>
+    </div>
+
+    <div id="resultTableContainer"></div>
+
+    <button id="toggleButton">📘 PÇ Tanımlarını Göster</button>
+    <div id="pc-aciklamalar" class="hidden">
+      <ol>
+        <li>Matematik, fen bilimleri ve ilgili mühendislik disiplinine özgü konularda yeterli bilgi birikimi...</li>
+        <li>Karmaşık mühendislik problemlerini saptama, tanımlama, formüle etme ve çözme becerisi...</li>
+        <li>Karmaşık bir sistemi, süreci, cihazı veya ürünü gerçekçi kısıtlar ve koşullar altında tasarlama becerisi...</li>
+        <li>Mühendislik uygulamalarında karşılaşılan karmaşık problemlerin analizi ve çözümü için gerekli modern teknik ve araçları kullanma becerisi...</li>
+        <li>Deney tasarlama, deney yapma, veri toplama, sonuçları analiz etme ve yorumlama becerisi...</li>
+        <li>Disiplin içi ve çok disiplinli takımlarda etkin biçimde çalışabilme becerisi...</li>
+        <li>Türkçe sözlü ve yazılı etkin iletişim kurma becerisi...</li>
+        <li>Yaşam boyu öğrenmenin gerekliliği bilinci...</li>
+        <li>Etik ilkelerine uygun davranma, mesleki ve etik sorumluluk bilinci...</li>
+        <li>Proje yönetimi, risk yönetimi ve değişiklik yönetimi hakkında bilgi...</li>
+        <li>Mühendislik uygulamalarının sağlık, çevre ve güvenlik üzerindeki etkileri hakkında bilgi...</li>
+        <li>Karmaşık donanımların, yazılımların ve sistemlerin tasarımı için gerekli olasılık ve istatistik bilgisi...</li>
+      </ol>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="pc.js"></script>
 </body>
 </html>
