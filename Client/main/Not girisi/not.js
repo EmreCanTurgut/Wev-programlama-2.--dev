@@ -122,5 +122,5 @@ function logout() {
 
 function ConfirimLogout() {
     localStorage.clear();
-    window.location.href = '../Login/index.html';
+    window.location.href = '../../Login/index.html';
 }

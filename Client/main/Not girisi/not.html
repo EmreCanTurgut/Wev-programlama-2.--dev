@@ -1,124 +1,158 @@
 <!DOCTYPE html>
 <html lang="tr">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Not Girişi ve Raporlama</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-        />
-        <link rel="stylesheet" href="not.css" />
-        <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-        />
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-            defer
-        ></script>
-    </head>
-    <body>
-        <!-- Üst Bar -->
-        <div class="container-fluid bg-light py-2 border-bottom">
-            <div class="d-flex justify-content-end px-4">
-                <span id="usernameDisplay" class="me-3 fw-semibold user"
-                    >User</span
-                >
-                <button
-                    class="btn btn-outline-danger btn-sm"
-                    onclick="logout()"
-                >
-                    Çıkış
-                </button>
-            </div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Not Girişi ve Raporlama</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="not.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      defer
+    ></script>
+  </head>
+  <body>
+    <!-- Üst Bar -->
+    <div class="container-fluid bg-light py-2 border-bottom">
+      <div class="d-flex justify-content-end px-4">
+        <span id="usernameDisplay" class="me-3 fw-semibold user">User</span>
+        <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+          Çıkış
+        </button>
+      </div>
+    </div>
+
+    <!-- Çıkış Onay Modali -->
+    <div
+      class="modal fade"
+      id="logoutModal"
+      tabindex="-1"
+      aria-labelledby="logoutModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="logoutModalLabel">Çıkış Yap</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Kapat"
+            ></button>
+          </div>
+          <div class="modal-body">
+            Oturumunuzu kapatmak istediğinizden emin misiniz?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              İptal
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              onclick="ConfirimLogout()"
+            >
+              Evet, Çıkış Yap
+            </button>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <div class="container mt-5">
-            <h2 class="text-center mb-4">Not Girişi ve Raporlama</h2>
-            <a href="../index.html" class="btn btn-outline-secondary mb-3">
-                <i class="bi bi-arrow-left"></i> Geri
-            </a>
+    <div class="container mt-5">
+      <h2 class="text-center mb-4">Not Girişi ve Raporlama</h2>
+      <a href="../index.html" class="btn btn-outline-secondary mb-3">
+        <i class="bi bi-arrow-left"></i> Geri
+      </a>
 
-            <!-- Manuel Not Girişi -->
-            <div class="card mb-4">
-                <div class="card-header">Manuel Not Girişi</div>
-                <div class="card-body">
-                    <form id="noteForm">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    name="ogrenciNo"
-                                    placeholder="Öğrenci No"
-                                    required
-                                />
-                            </div>
-                            <div class="col-md-3">
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    name="ders"
-                                    placeholder="Ders Kodu"
-                                    required
-                                />
-                            </div>
-                            <div class="col-md-2">
-                                <input
-                                    type="number"
-                                    class="form-control"
-                                    name="not"
-                                    placeholder="Not"
-                                    required
-                                />
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <button class="btn btn-primary" type="submit">
-                                    Kaydet
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+      <!-- Manuel Not Girişi -->
+      <div class="card mb-4">
+        <div class="card-header">Manuel Not Girişi</div>
+        <div class="card-body">
+          <form id="noteForm">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="ogrenciNo"
+                  placeholder="Öğrenci No"
+                  required
+                />
+              </div>
+              <div class="col-md-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="ders"
+                  placeholder="Ders Kodu"
+                  required
+                />
+              </div>
+              <div class="col-md-2">
+                <input
+                  type="number"
+                  class="form-control"
+                  name="not"
+                  placeholder="Not"
+                  required
+                />
+              </div>
+              <div class="col-md-4 text-end">
+                <button class="btn btn-primary" type="submit">Kaydet</button>
+              </div>
             </div>
-
-            <!-- CSV/Excel Yükleme -->
-            <div class="card mb-4">
-                <div class="card-header">Excel / CSV Yükle</div>
-                <div class="card-body">
-                    <input
-                        type="file"
-                        id="fileInput"
-                        accept=".csv,.xlsx"
-                        class="form-control"
-                    />
-                </div>
-            </div>
-
-            <!-- Not Listesi -->
-            <div class="card">
-                <div class="card-header">Not Listesi</div>
-                <div class="card-body table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Öğrenci No</th>
-                                <th>Ders Kodu</th>
-                                <th>Not</th>
-                                <th>İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody id="noteTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
+          </form>
         </div>
+      </div>
 
-        <script src="not.js"></script>
+      <!-- CSV/Excel Yükleme -->
+      <div class="card mb-4">
+        <div class="card-header">Excel / CSV Yükle</div>
+        <div class="card-body">
+          <input
+            type="file"
+            id="fileInput"
+            accept=".csv,.xlsx"
+            class="form-control"
+          />
+        </div>
+      </div>
 
-        <!-- Snackbar mesajı -->
+      <!-- Not Listesi -->
+      <div class="card">
+        <div class="card-header">Not Listesi</div>
+        <div class="card-body table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Öğrenci No</th>
+                <th>Ders Kodu</th>
+                <th>Not</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="noteTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="not.js"></script>
+
+    <!-- Snackbar mesajı -->
     <div id="snackbar"></div>
-    
-    </body>
+  </body>
 </html>
