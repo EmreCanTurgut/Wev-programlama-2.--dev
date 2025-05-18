@@ -1,37 +1,30 @@
 const form = document.getElementById('lessonForm');
-const tableBody =
-    document.getElementById('courseTableBody') ||
-    document.getElementById('studentTableBody');
+const tableBody = document.getElementById('studentTableBody');
 const searchInput = document.getElementById('searchInput');
+const token = localStorage.getItem('token');
+const apiBase = 'http://127.0.0.1:5000/api/courses';
 
 let courses = [];
 let editingCourseCode = null;
 
-const token = localStorage.getItem('token');
-const apiBase = 'http://127.0.0.1:5000/api/courses';
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadCourses();
-});
+document.addEventListener('DOMContentLoaded', () => loadCourses());
 
 async function loadCourses(filter = '') {
     try {
-        if (!tableBody) throw new Error('Tablo elementi bulunamadı');
         const url = filter
             ? `${apiBase}/?code=${encodeURIComponent(filter)}`
             : apiBase + '/';
         const res = await fetch(url, {
             headers: {
                 'Content-Type': 'application/json',
-                ...(token && { Authorization: `Bearer ${token}` }),
+                Authorization: `Bearer ${token}`,
             },
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Dersler yüklenirken hata oluştu.');
+        if (!res.ok) throw new Error(data.msg || 'Dersler yüklenirken hata.');
         courses = data;
         renderTable(filter);
     } catch (err) {
-        console.error(err);
         showSnackbar(err.message);
     }
 }
@@ -39,36 +32,49 @@ async function loadCourses(filter = '') {
 function renderTable(filter = '') {
     tableBody.innerHTML = '';
     courses
-        .filter((c) => {
-            const full = `${c.name} ${c.code} ${c.credit} ${c.instructor}`.toLowerCase();
-            return full.includes(filter.toLowerCase());
-        })
+        .filter((c) =>
+            `${c.name} ${c.code} ${c.credit} ${c.instructor}`
+                .toLowerCase()
+                .includes(filter.toLowerCase())
+        )
         .forEach((course) => {
-            if (course.code == null) return;
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${course.name}</td>
-                <td>${course.code}</td>
-                <td>${course.credit}</td>
-                <td>${course.instructor}</td>
-                <td>
-                    <button class="btn btn-sm btn-warning" onclick="startEdit('${course.code}')">Düzenle</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteCourse('${course.code}')">Sil</button>
-                </td>
-            `;
-            tableBody.appendChild(row);
+            if (!course.code) return;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+        <td>${course.name}</td>
+        <td>${course.code}</td>
+        <td>${course.credit}</td>
+        <td>${course.instructor}</td>
+        <td>
+          <button class="btn btn-sm btn-warning" onclick="startEdit('${course.code}')">Düzenle</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteCourse('${course.code}')">Sil</button>
+        </td>
+      `;
+            tableBody.appendChild(tr);
         });
 }
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(form);
+    const fd = new FormData(form);
+    // Temel ders nesnesi
     const payload = {
-        name: formData.get('ad'),
-        code: formData.get('kod'),
-        credit: parseInt(formData.get('kredi'), 10),
-        instructor: formData.get('ogretimUyesi'),
+        name: fd.get('ad'),
+        code: fd.get('kod'),
+        credit: parseInt(fd.get('kredi'), 10),
+        instructor: fd.get('ogretimUyesi'),
     };
+    // Çıktı kodları alanını işle
+    const ocStr = fd.get('outcomes')?.trim();
+    if (ocStr) {
+        const list = ocStr
+            .split(',')
+            .map((s) => s.trim())
+            .filter((s) => /^\d+$/.test(s))
+            .map(Number);
+        if (list.length) payload.outcomes = list;
+    }
+
     try {
         let res;
         if (editingCourseCode) {
@@ -78,11 +84,7 @@ form.addEventListener('submit', async (e) => {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    name: payload.name,
-                    credit: payload.credit,
-                    instructor: payload.instructor,
-                }),
+                body: JSON.stringify(payload),
             });
         } else {
             res = await fetch(apiBase + '/', {
@@ -94,15 +96,13 @@ form.addEventListener('submit', async (e) => {
                 body: JSON.stringify(payload),
             });
         }
-
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'API hatası');
+        if (!res.ok) throw new Error(data.msg || 'API hatası');
+        showSnackbar('Ders başarıyla kaydedildi.');
         form.reset();
         editingCourseCode = null;
-        showSnackbar('Ders başarıyla kaydedildi.');
         loadCourses(searchInput.value);
     } catch (err) {
-        console.error(err);
         showSnackbar(err.message);
     }
 });
@@ -114,14 +114,11 @@ async function deleteCourse(code) {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) {
-            const data = await res.json();
-            throw new Error(data.message);
-        }
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.msg);
         showSnackbar('Ders silindi.');
         loadCourses(searchInput.value);
     } catch (err) {
-        console.error(err);
         showSnackbar(err.message);
     }
 }
@@ -133,36 +130,30 @@ function startEdit(code) {
     form.elements['kod'].value = course.code;
     form.elements['kredi'].value = course.credit;
     form.elements['ogretimUyesi'].value = course.instructor;
-    editingCourseCode = course.code;
+    // Not: outcomes back‑fill için ek kod yazılabilir
+    editingCourseCode = code;
 }
 
 searchInput.addEventListener('input', (e) => renderTable(e.target.value));
-
-const userName = localStorage.getItem('user');
-const usernameDisplay = document.getElementById('usernameDisplay');
-if (usernameDisplay) usernameDisplay.textContent = userName || 'User';
 
 function logout() {
     const modal = new bootstrap.Modal(document.getElementById('logoutModal'));
     modal.show();
 }
-
 function ConfirimLogout() {
     localStorage.clear();
     window.location.href = '../../Login/index.html';
 }
 
-// Stil içermeyen snackbar fonksiyonu
-function showSnackbar(message) {
-    let snackbar = document.getElementById('snackbar');
-    if (!snackbar) {
-        snackbar = document.createElement('div');
-        snackbar.id = 'snackbar';
-        document.body.appendChild(snackbar);
+// Basit snackbar gösterimi
+function showSnackbar(msg) {
+    let sb = document.getElementById('snackbar');
+    if (!sb) {
+        sb = document.createElement('div');
+        sb.id = 'snackbar';
+        document.body.appendChild(sb);
     }
-    snackbar.textContent = message;
-    snackbar.classList.add('show');
-    setTimeout(() => {
-        snackbar.classList.remove('show');
-    }, 3000);
+    sb.textContent = msg;
+    sb.classList.add('show');
+    setTimeout(() => sb.classList.remove('show'), 3000);
 }

@@ -83,7 +83,7 @@ fileInput.addEventListener('change', async () => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.msg);
         showSnackbar(`Yüklendi: ${data.successCount}`);
-        console.log('Upload response:', data);  
+        console.log('Upload response:', data);
         loadNotes();
     } catch (err) {
         showSnackbar(err.message);
@@ -107,11 +107,20 @@ deleteGrade = async (id) => {
 };
 
 function showSnackbar(message) {
-    const snackbar = document.getElementById("snackbar");
+    const snackbar = document.getElementById('snackbar');
     snackbar.textContent = message;
-    snackbar.className = "show";
+    snackbar.className = 'show';
     setTimeout(() => {
-      snackbar.className = snackbar.className.replace("show", "");
+        snackbar.className = snackbar.className.replace('show', '');
     }, 3000);
-  }
-  
+}
+
+function logout() {
+    const modal = new bootstrap.Modal(document.getElementById('logoutModal'));
+    modal.show();
+}
+
+function ConfirimLogout() {
+    localStorage.clear();
+    window.location.href = '../Login/index.html';
+}
