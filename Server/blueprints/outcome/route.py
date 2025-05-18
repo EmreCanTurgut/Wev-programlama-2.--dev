@@ -3,77 +3,107 @@ from flask_jwt_extended import jwt_required
 from extensions.mongo import mongo
 import datetime
 
+# Blueprint for Program Çıktısı (PÇ) realizations
 outcome_bp = Blueprint('outcome', __name__)
 
 
 def get_db():
     return mongo.db
 
-# --- Program Çıktıları Tanımlama ---
+# 1. Öğrenci bazında PÇ gerçekleme raporu
+# GET /api/outcomes/realization/student/<student_number>?term=2024-Fall
 
 
-@outcome_bp.route('/outcomes', methods=['POST'])
+@outcome_bp.route('/realization/student/<student_number>', methods=['GET'])
 @jwt_required()
-def create_outcome():
+def student_realization(student_number):
     db = get_db()
-    data = request.get_json() or {}
-    required = ['course_code', 'outcome_code', 'description']
-    if not all(field in data for field in required):
-        return jsonify({'msg': 'Missing outcome fields'}), 400
-    # Prevent duplicates
-    if db.outcomes.find_one({'course_code': data['course_code'], 'outcome_code': data['outcome_code']}):
-        return jsonify({'msg': 'Outcome already exists'}), 409
-    record = {
-        'course_code': data['course_code'],
-        'outcome_code': data['outcome_code'],
-        'description': data['description'],
-        'created_at': datetime.datetime.utcnow()
-    }
-    db.outcomes.insert_one(record)
-    return jsonify({'msg': 'Outcome created'}), 201
+    term = request.args.get('term')
+    # 1-a. Öğrencinin aldığı notlar
+    grade_query = {'student_number': student_number}
+    if term:
+        grade_query['term'] = term
+    grades = list(db.grades.find(grade_query))
+    # 1-b. Her not için ilişkili outcome'lar
+    # grade_outcome koleksiyonünde eşleşen mapler
+    student_outcomes = {}
+    for g in grades:
+        gid = str(g['_id'])
+        maps = db.grade_outcome.find({'grade_id': gid})
+        for m in maps:
+            oid = m['outcome_id']
+            student_outcomes.setdefault(oid, []).append(float(g['grade']))
+    # 1-c. Ortalama hesapla
+    result = []
+    for oid, scores in student_outcomes.items():
+        out = db.outcomes.find_one({'_id': mongo.db.ObjectId(oid)})
+        result.append({
+            'outcome_code': out['outcome_code'],
+            'description': out.get('description'),
+            'realization_rate': sum(scores) / len(scores)
+        })
+    return jsonify({'student_number': student_number, 'term': term, 'outcomes': result}), 200
 
-# --- Notlarla PÇ İlişkilendirme ---
+# 2. Ders bazında PÇ gerçekleme raporu
+# GET /api/outcomes/realization/course/<course_code>?term=2024-Fall
 
 
-@outcome_bp.route('/map', methods=['POST'])
-@jwt_required()
-def map_grade_outcome():
+@outcome_bp.route('/realization/course/<course_code>', methods=['GET'])
+def course_realization(course_code):
     db = get_db()
-    data = request.get_json() or {}
-    required = ['grade_id', 'outcome_id']
-    if not all(field in data for field in required):
-        return jsonify({'msg': 'Missing mapping fields'}), 400
-    # prevent duplicate mapping
-    if db.grade_outcome.find_one({'grade_id': data['grade_id'], 'outcome_id': data['outcome_id']}):
-        return jsonify({'msg': 'Mapping exists'}), 409
-    record = {
-        'grade_id': data['grade_id'],
-        'outcome_id': data['outcome_id'],
-        'mapped_at': datetime.datetime.utcnow()
-    }
-    db.grade_outcome.insert_one(record)
-    return jsonify({'msg': 'Grade-outcome mapped'}), 201
+    term = request.args.get('term')
+    # 2-a. Dersin notları
+    grade_query = {'course_code': course_code}
+    if term:
+        grade_query['term'] = term
+    grades = list(db.grades.find(grade_query))
+    # 2-b. Map'leri al
+    course_outcomes = {}
+    for g in grades:
+        gid = str(g['_id'])
+        maps = db.grade_outcome.find({'grade_id': gid})
+        for m in maps:
+            oid = m['outcome_id']
+            course_outcomes.setdefault(oid, []).append(float(g['grade']))
+    # 2-c. Ortalama
+    result = []
+    for oid, scores in course_outcomes.items():
+        out = db.outcomes.find_one({'_id': mongo.db.ObjectId(oid)})
+        result.append({
+            'outcome_code': out['outcome_code'],
+            'description': out.get('description'),
+            'realization_rate': sum(scores) / len(scores)
+        })
+    return jsonify({'course_code': course_code, 'term': term, 'outcomes': result}), 200
 
-# --- PÇ Gerçekleme Hesaplama ---
+# 3. Program bazında (tüm dersler) PÇ gerçekleme özeti
+# GET /api/outcomes/realization/program?term=2024-Fall
 
 
-@outcome_bp.route('/realization/<course_code>/<outcome_code>', methods=['GET'])
-def realization_rate(course_code, outcome_code):
+@outcome_bp.route('/realization/program', methods=['GET'])
+def program_realization():
     db = get_db()
-    # find all grades for course
-    grades = list(db.grades.find({'course_code': course_code}))
-    # find outcome id
-    outcome = db.outcomes.find_one(
-        {'course_code': course_code, 'outcome_code': outcome_code})
-    if not outcome:
-        return jsonify({'msg': 'Outcome not found'}), 404
-    # find mapped grade ids
-    mappings = list(db.grade_outcome.find({'outcome_id': str(outcome['_id'])}))
-    mapped_grade_ids = {m['grade_id'] for m in mappings}
-    # filter grades
-    relevant = [g for g in grades if str(g['_id']) in mapped_grade_ids]
-    if not relevant:
-        return jsonify({'rate': 0.0}), 200
-    # compute average of grades
-    avg = sum(float(g['grade']) for g in relevant) / len(relevant)
-    return jsonify({'course_code': course_code, 'outcome_code': outcome_code, 'realization_rate': avg}), 200
+    term = request.args.get('term')
+    # 3-a. Tüm notları çek
+    grade_query = {}
+    if term:
+        grade_query['term'] = term
+    grades = list(db.grades.find(grade_query))
+    # 3-b. Map'leri topla
+    program_outcomes = {}
+    for g in grades:
+        gid = str(g['_id'])
+        maps = db.grade_outcome.find({'grade_id': gid})
+        for m in maps:
+            oid = m['outcome_id']
+            program_outcomes.setdefault(oid, []).append(float(g['grade']))
+    # 3-c. Ortalama
+    result = []
+    for oid, scores in program_outcomes.items():
+        out = db.outcomes.find_one({'_id': mongo.db.ObjectId(oid)})
+        result.append({
+            'outcome_code': out['outcome_code'],
+            'description': out.get('description'),
+            'realization_rate': sum(scores) / len(scores)
+        })
+    return jsonify({'term': term, 'outcomes': result}), 200
