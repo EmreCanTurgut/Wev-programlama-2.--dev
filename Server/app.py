@@ -10,6 +10,7 @@ from config import Config
 import os
 from flask import Flask
 from dotenv import load_dotenv
+import logging
 
 # Load .env from project root (working directory) before Config import
 load_dotenv()

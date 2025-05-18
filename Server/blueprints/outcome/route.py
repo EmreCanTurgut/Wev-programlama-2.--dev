@@ -1,7 +1,7 @@
-from flask import Blueprint, request, jsonify
+from bson import ObjectId
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required
 from flask_cors import cross_origin
-from bson.objectid import ObjectId
 from extensions.mongo import mongo
 
 outcome_bp = Blueprint('outcome', __name__, url_prefix='/api/outcomes')
@@ -10,59 +10,64 @@ outcome_bp = Blueprint('outcome', __name__, url_prefix='/api/outcomes')
 def _calculate_realization(filter_query):
     db = mongo.db
 
-    # 1) İlgili notları çek
+    # 1) Filtreye uyan notları çek
     grades = list(db.grades.find(filter_query))
+    current_app.logger.debug(f"Grades fetched ({len(grades)}): {grades}")
     if not grades:
         return []
 
-    # 2) Not ID'lerinin string hali
-    grade_id_strs = [str(g['_id']) for g in grades]
-
-    # 3) Tüm ilgili linkleri tek seferde çek
+    # 2) Tüm grade'lerin outcome ilişkilerini al
+    #    hem ObjectId hem string tipli grade_id
+    grade_ids = [g['_id'] for g in grades]
+    grade_id_strs = [str(gid) for gid in grade_ids]
     links = list(db.grade_outcome.find({
-        'grade_id': {'$in': grade_id_strs + [ObjectId(gid) for gid in grade_id_strs if ObjectId.is_valid(gid)]}
+        '$or': [
+            {'grade_id': {'$in': grade_ids}},
+            {'grade_id': {'$in': grade_id_strs}}
+        ]
     }))
+    current_app.logger.debug(f"Links fetched ({len(links)}): {links}")
 
-    # 4) grade_id (string) → [outcome_id(string)] map’i oluştur
+    # 3) Her grade_id için bağlı outcome_id listelerini oluştur
     grade_to_outcomes = {}
     for link in links:
-        raw_gid = link.get('grade_id')
-        raw_oid = link.get('outcome_id')
+        gid = link['grade_id']
+        oid_raw = link['outcome_id']
+        grade_to_outcomes.setdefault(gid, []).append(oid_raw)
+    current_app.logger.debug(f"Grade->Outcomes map: {grade_to_outcomes}")
 
-        # Hem ObjectId hem de string gelen haller için normalize et
-        gid = str(raw_gid)
-        oid = str(raw_oid)
-
-        grade_to_outcomes.setdefault(gid, []).append(oid)
-
-    # 5) Her outcome için notları topla
-    outcome_scores = {}
+    # 4) Öğrenci bazlı: ortak outcome'ları bul
+    common_oids = None
     for g in grades:
-        gid = str(g['_id'])
-        try:
-            score = float(g.get('grade', 0))
-        except (TypeError, ValueError):
-            continue
+        gid = g['_id']
+        oids = grade_to_outcomes.get(gid, [])
+        if common_oids is None:
+            common_oids = set(oids)
+        else:
+            common_oids &= set(oids)
+    common_oids = common_oids or set()
+    current_app.logger.debug(f"Common outcome_id strings: {common_oids}")
 
-        for oid_str in grade_to_outcomes.get(gid, []):
-            # Çıkış ID’sini ObjectId’ye çevir
-            if not ObjectId.is_valid(oid_str):
-                continue
-            oid = ObjectId(oid_str)
-            outcome_scores.setdefault(oid, []).append(score)
+    # 5) Score ortalamasını hesapla
+    avg_score = round(sum(float(g.get('grade', 0))
+                      for g in grades) / len(grades), 2)
+    current_app.logger.debug(f"Average grade score for student: {avg_score}")
 
-    # 6) Ortalama realize oranlarını hesapla
+    # 6) Sonuçları oluştur
     results = []
-    for oid, scores in outcome_scores.items():
+    for oid_str in common_oids:
+        if not ObjectId.is_valid(oid_str):
+            continue
+        oid = ObjectId(oid_str)
         outcome = db.outcomes.find_one({'_id': oid})
         if not outcome:
             continue
-        avg_rate = round(sum(scores) / len(scores), 2) if scores else 0.0
         results.append({
             'outcome_code': outcome.get('outcome_code'),
             'description': outcome.get('description', ''),
-            'realization_rate': avg_rate
+            'realization_rate': avg_score
         })
+    current_app.logger.debug(f"Final student results: {results}")
     return results
 
 
@@ -72,8 +77,11 @@ def _calculate_realization(filter_query):
 def student_realization(student_number):
     if request.method == 'OPTIONS':
         return jsonify({}), 200
-    results = _calculate_realization({'student_number': student_number})
-    return jsonify({'outcomes': results}), 200
+    data = _calculate_realization({'student_number': student_number})
+    current_app.logger.debug(f"Returning student outcomes: {data}")
+    return jsonify({'outcomes': data}), 200
+
+# Ders ve program için mevcut ortalama metodunu koru
 
 
 @outcome_bp.route('/realization/course/<string:course_code>', methods=['GET', 'OPTIONS'])
@@ -82,8 +90,12 @@ def student_realization(student_number):
 def course_realization(course_code):
     if request.method == 'OPTIONS':
         return jsonify({}), 200
-    results = _calculate_realization({'course_code': course_code})
-    return jsonify({'outcomes': results}), 200
+    # Ders bazında tüm öğrenci notlarını alıp her outcome için ortalama
+    db = mongo.db
+    # Aynı fonksiyonu kullanmak için grade_outcome ilişkisi öncelikli alınır
+    data = _calculate_realization({'course_code': course_code})
+    current_app.logger.debug(f"Returning course outcomes: {data}")
+    return jsonify({'outcomes': data}), 200
 
 
 @outcome_bp.route('/realization/summary', methods=['GET', 'OPTIONS'])
@@ -92,5 +104,7 @@ def course_realization(course_code):
 def program_realization():
     if request.method == 'OPTIONS':
         return jsonify({}), 200
-    results = _calculate_realization({})
-    return jsonify({'outcomes': results}), 200
+    # Program özeti: tüm grade_outcome ilişkileri ve not ortalaması
+    data = _calculate_realization({})
+    current_app.logger.debug(f"Returning summary outcomes: {data}")
+    return jsonify({'outcomes': data}), 200
