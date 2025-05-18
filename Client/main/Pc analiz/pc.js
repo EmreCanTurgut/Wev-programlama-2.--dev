@@ -22,6 +22,7 @@ const chartData = {
     data: genelOrtalama,
     backgroundColor: "rgba(0, 123, 255, 0.7)",
     borderColor: "rgba(0, 86, 179, 1)",
+    borderRadius:5,
     borderWidth: 1,
   }]
 };
@@ -92,46 +93,51 @@ btnProgram.addEventListener("click", () => {
   renderPCTablosu(dummyProgramlar, "Program");
 });
 
-// --- Tabloyu Render Et ---
 function renderPCTablosu(data, tip) {
-  let html = `<table>
-    <thead>
-      <tr><th>${tip} Adı</th>`;
-
-  for (let i = 1; i <= 12; i++) {
-    html += `<th>PÇ${i}</th>`;
+    let html = `<table>
+      <thead>
+        <tr><th>${tip} Adı</th>`;
+    for (let i = 1; i <= 12; i++) {
+      html += `<th>PÇ${i}</th>`;
+    }
+    html += `</tr></thead><tbody>`;
+  
+    data.forEach((item, index) => {
+      html += `<tr data-index="${index}" class="pc-row">
+                 <td>${item.ad}</td>`;
+      item.pc.forEach(puan => {
+        html += `<td>${puan}%</td>`;
+      });
+      html += `</tr>`;
+    });
+  
+    html += `</tbody></table>`;
+    resultContainer.innerHTML = html;
+  
+    // Satırlara tıklama olayı ekle
+    const rows = document.querySelectorAll("#resultTableContainer .pc-row");
+    rows.forEach(row => {
+      row.style.cursor = "pointer";
+      row.addEventListener("click", () => {
+        // 1) Tüm satırlardan 'selected' sınıfını kaldır
+        rows.forEach(r => r.classList.remove('selected'));
+  
+        // 2) Tıklanan satıra 'selected' sınıfını ekle
+        row.classList.add('selected');
+  
+        // 3) Grafiği güncelle
+        const idx = row.getAttribute("data-index");
+        updateChartWithData(data[idx], tip);
+      });
+    });
+  
+    // Tablo render edildikten sonra grafiği genel ortalama olarak sıfırla
+    pcChart.data.datasets[0].data = genelOrtalama;
+    pcChart.data.datasets[0].label = "Genel PÇ Gerçekleşme Oranı";
+    pcChart.options.plugins.title.text = "Program Çıktısı Gerçekleşme Oranları";
+    pcChart.update();
   }
-
-  html += `</tr></thead><tbody>`;
-
-  data.forEach((item, index) => {
-    html += `<tr data-index="${index}" class="pc-row">
-               <td>${item.ad}</td>`;
-    item.pc.forEach(puan => {
-      html += `<td>${puan}%</td>`;
-    });
-    html += `</tr>`;
-  });
-
-  html += `</tbody></table>`;
-  resultContainer.innerHTML = html;
-
-  // Satırlara tıklama olayı ekle
-  const rows = document.querySelectorAll("#resultTableContainer .pc-row");
-  rows.forEach(row => {
-    row.style.cursor = "pointer";
-    row.addEventListener("click", () => {
-      const idx = row.getAttribute("data-index");
-      updateChartWithData(data[idx], tip);
-    });
-  });
-
-  // Tablo render olduktan sonra grafiği genel ortalama olarak sıfırla
-  pcChart.data.datasets[0].data = genelOrtalama;
-  pcChart.data.datasets[0].label = "Genel PÇ Gerçekleşme Oranı";
-  pcChart.options.plugins.title.text = "Program Çıktısı Gerçekleşme Oranları";
-  pcChart.update();
-}
+  
 
 // --- Grafiği Güncelle ---
 function updateChartWithData(item, tip) {
@@ -145,7 +151,7 @@ function updateChartWithData(item, tip) {
 //buton basılması
 function setActiveButton(activeBtn) {
     [btnOgrenci, btnDers, btnProgram].forEach(btn => {
-      btn.classList.remove("active");
+      btn.classList.remove("active");   
     });
     activeBtn.classList.add("active");
   }
@@ -168,4 +174,9 @@ function setActiveButton(activeBtn) {
   // Sayfa yüklendiğinde ilk aktif butonu ayarla
   setActiveButton(btnOgrenci);
 
+const allrows =document.querySelectorAll(".pc-row")
+console.log(allrows)
+allrows.forEach((e)=>{e.addEventListener("click",()=>{
+    e.classList.remove
 
+})})
