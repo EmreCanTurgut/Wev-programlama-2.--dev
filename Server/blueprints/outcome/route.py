@@ -1,109 +1,96 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
+from flask_cors import cross_origin
+from bson.objectid import ObjectId
 from extensions.mongo import mongo
-import datetime
 
-# Blueprint for Program Çıktısı (PÇ) realizations
-outcome_bp = Blueprint('outcome', __name__)
+outcome_bp = Blueprint('outcome', __name__, url_prefix='/api/outcomes')
 
 
-def get_db():
-    return mongo.db
+def _calculate_realization(filter_query):
+    db = mongo.db
 
-# 1. Öğrenci bazında PÇ gerçekleme raporu
-# GET /api/outcomes/realization/student/<student_number>?term=2024-Fall
+    # 1) İlgili notları çek
+    grades = list(db.grades.find(filter_query))
+    if not grades:
+        return []
+
+    # 2) Not ID'lerinin string hali
+    grade_id_strs = [str(g['_id']) for g in grades]
+
+    # 3) Tüm ilgili linkleri tek seferde çek
+    links = list(db.grade_outcome.find({
+        'grade_id': {'$in': grade_id_strs + [ObjectId(gid) for gid in grade_id_strs if ObjectId.is_valid(gid)]}
+    }))
+
+    # 4) grade_id (string) → [outcome_id(string)] map’i oluştur
+    grade_to_outcomes = {}
+    for link in links:
+        raw_gid = link.get('grade_id')
+        raw_oid = link.get('outcome_id')
+
+        # Hem ObjectId hem de string gelen haller için normalize et
+        gid = str(raw_gid)
+        oid = str(raw_oid)
+
+        grade_to_outcomes.setdefault(gid, []).append(oid)
+
+    # 5) Her outcome için notları topla
+    outcome_scores = {}
+    for g in grades:
+        gid = str(g['_id'])
+        try:
+            score = float(g.get('grade', 0))
+        except (TypeError, ValueError):
+            continue
+
+        for oid_str in grade_to_outcomes.get(gid, []):
+            # Çıkış ID’sini ObjectId’ye çevir
+            if not ObjectId.is_valid(oid_str):
+                continue
+            oid = ObjectId(oid_str)
+            outcome_scores.setdefault(oid, []).append(score)
+
+    # 6) Ortalama realize oranlarını hesapla
+    results = []
+    for oid, scores in outcome_scores.items():
+        outcome = db.outcomes.find_one({'_id': oid})
+        if not outcome:
+            continue
+        avg_rate = round(sum(scores) / len(scores), 2) if scores else 0.0
+        results.append({
+            'outcome_code': outcome.get('outcome_code'),
+            'description': outcome.get('description', ''),
+            'realization_rate': avg_rate
+        })
+    return results
 
 
-@outcome_bp.route('/realization/student/<student_number>', methods=['GET'])
+@outcome_bp.route('/realization/student/<string:student_number>', methods=['GET', 'OPTIONS'])
+@cross_origin()
 @jwt_required()
 def student_realization(student_number):
-    db = get_db()
-    term = request.args.get('term')
-    # 1-a. Öğrencinin aldığı notlar
-    grade_query = {'student_number': student_number}
-    if term:
-        grade_query['term'] = term
-    grades = list(db.grades.find(grade_query))
-    # 1-b. Her not için ilişkili outcome'lar
-    # grade_outcome koleksiyonünde eşleşen mapler
-    student_outcomes = {}
-    for g in grades:
-        gid = str(g['_id'])
-        maps = db.grade_outcome.find({'grade_id': gid})
-        for m in maps:
-            oid = m['outcome_id']
-            student_outcomes.setdefault(oid, []).append(float(g['grade']))
-    # 1-c. Ortalama hesapla
-    result = []
-    for oid, scores in student_outcomes.items():
-        out = db.outcomes.find_one({'_id': mongo.db.ObjectId(oid)})
-        result.append({
-            'outcome_code': out['outcome_code'],
-            'description': out.get('description'),
-            'realization_rate': sum(scores) / len(scores)
-        })
-    return jsonify({'student_number': student_number, 'term': term, 'outcomes': result}), 200
-
-# 2. Ders bazında PÇ gerçekleme raporu
-# GET /api/outcomes/realization/course/<course_code>?term=2024-Fall
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    results = _calculate_realization({'student_number': student_number})
+    return jsonify({'outcomes': results}), 200
 
 
-@outcome_bp.route('/realization/course/<course_code>', methods=['GET'])
+@outcome_bp.route('/realization/course/<string:course_code>', methods=['GET', 'OPTIONS'])
+@cross_origin()
+@jwt_required()
 def course_realization(course_code):
-    db = get_db()
-    term = request.args.get('term')
-    # 2-a. Dersin notları
-    grade_query = {'course_code': course_code}
-    if term:
-        grade_query['term'] = term
-    grades = list(db.grades.find(grade_query))
-    # 2-b. Map'leri al
-    course_outcomes = {}
-    for g in grades:
-        gid = str(g['_id'])
-        maps = db.grade_outcome.find({'grade_id': gid})
-        for m in maps:
-            oid = m['outcome_id']
-            course_outcomes.setdefault(oid, []).append(float(g['grade']))
-    # 2-c. Ortalama
-    result = []
-    for oid, scores in course_outcomes.items():
-        out = db.outcomes.find_one({'_id': mongo.db.ObjectId(oid)})
-        result.append({
-            'outcome_code': out['outcome_code'],
-            'description': out.get('description'),
-            'realization_rate': sum(scores) / len(scores)
-        })
-    return jsonify({'course_code': course_code, 'term': term, 'outcomes': result}), 200
-
-# 3. Program bazında (tüm dersler) PÇ gerçekleme özeti
-# GET /api/outcomes/realization/program?term=2024-Fall
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    results = _calculate_realization({'course_code': course_code})
+    return jsonify({'outcomes': results}), 200
 
 
-@outcome_bp.route('/realization/program', methods=['GET'])
+@outcome_bp.route('/realization/summary', methods=['GET', 'OPTIONS'])
+@cross_origin()
+@jwt_required()
 def program_realization():
-    db = get_db()
-    term = request.args.get('term')
-    # 3-a. Tüm notları çek
-    grade_query = {}
-    if term:
-        grade_query['term'] = term
-    grades = list(db.grades.find(grade_query))
-    # 3-b. Map'leri topla
-    program_outcomes = {}
-    for g in grades:
-        gid = str(g['_id'])
-        maps = db.grade_outcome.find({'grade_id': gid})
-        for m in maps:
-            oid = m['outcome_id']
-            program_outcomes.setdefault(oid, []).append(float(g['grade']))
-    # 3-c. Ortalama
-    result = []
-    for oid, scores in program_outcomes.items():
-        out = db.outcomes.find_one({'_id': mongo.db.ObjectId(oid)})
-        result.append({
-            'outcome_code': out['outcome_code'],
-            'description': out.get('description'),
-            'realization_rate': sum(scores) / len(scores)
-        })
-    return jsonify({'term': term, 'outcomes': result}), 200
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    results = _calculate_realization({})
+    return jsonify({'outcomes': results}), 200

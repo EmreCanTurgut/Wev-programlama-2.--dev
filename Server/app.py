@@ -26,6 +26,9 @@ def create_app():
     jwt.init_app(app)
     app.url_map.strict_slashes = False
 
+    app.config['JWT_HEADER_TYPE'] = 'Bearer'
+    app.config['JWT_HEADER_NAME'] = 'Authorization'
+
     CORS(app)
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')

@@ -1,6 +1,5 @@
 // pc.js
 
-// Element referansları
 const toggleBtn = document.getElementById('toggleButton');
 const pcAciklamalar = document.getElementById('pc-aciklamalar');
 const btnOgrenci = document.getElementById('btnOgrenci');
@@ -10,38 +9,33 @@ const resultContainer = document.getElementById('resultTableContainer');
 const ctx = document.getElementById('pcChart').getContext('2d');
 const token = localStorage.getItem('token');
 
-// Chart.js başlangıç (boş veri)
+// Basit snackbar
+function showSnackbar(msg) {
+    const sb = document.createElement('div');
+    sb.className = 'snackbar show';
+    sb.textContent = msg;
+    document.body.appendChild(sb);
+    setTimeout(() => {
+        sb.classList.remove('show');
+        sb.addEventListener('transitionend', () => sb.remove());
+    }, 3000);
+}
+
+// Chart.js setup
 const pcChart = new Chart(ctx, {
     type: 'bar',
-    data: {
-        labels: [],
-        datasets: [
-            {
-                label: '',
-                data: [],
-                backgroundColor: 'rgba(0, 123, 255, 0.7)',
-                borderColor: 'rgba(0, 86, 179, 1)',
-                borderRadius: 5,
-                borderWidth: 1,
-            },
-        ],
-    },
+    data: { labels: [], datasets: [{ label: '', data: [] }] },
     options: {
         responsive: true,
         plugins: {
             legend: { position: 'top' },
-            title: {
-                display: true,
-                text: 'Program Çıktısı Gerçekleşme Oranları',
-            },
+            title: { display: true, text: 'PÇ Oranları' },
         },
-        scales: {
-            y: { beginAtZero: true, max: 100 },
-        },
+        scales: { y: { beginAtZero: true, max: 100 } },
     },
 });
 
-// PÇ tanımlamalarını göster/gizle
+// Toggle tanımlar
 toggleBtn.addEventListener('click', () => {
     pcAciklamalar.classList.toggle('hidden');
     toggleBtn.textContent = pcAciklamalar.classList.contains('hidden')
@@ -49,88 +43,88 @@ toggleBtn.addEventListener('click', () => {
         : '📕 PÇ Tanımlarını Gizle';
 });
 
-// Buton tıklamaları
+// Ortak fetch + render fonksiyonu
+async function fetchAndRender(path, type, name) {
+    try {
+        const res = await fetch(`http://127.0.0.1:5000/api/${path}`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.msg || 'Veri alınamadı');
+
+        // outcomes yoksa uyarı
+        if (!data.outcomes || !data.outcomes.length) {
+            resultContainer.innerHTML = `<p class="text-center text-muted">Veri bulunamadı.</p>`;
+            pcChart.data.labels = [];
+            pcChart.data.datasets[0].data = [];
+            pcChart.update();
+            return;
+        }
+
+        // tablo
+        let html = `<h3>${type}: ${name}</h3>
+      <table class="table table-striped">
+        <thead><tr><th>PÇ Kodu</th><th>Oran (%)</th></tr></thead>
+        <tbody>
+    `;
+        data.outcomes.forEach((o) => {
+            html += `<tr>
+        <td>${o.outcome_code}</td>
+        <td>${o.realization_rate.toFixed(1)}</td>
+      </tr>`;
+        });
+        html += `</tbody></table>`;
+        resultContainer.innerHTML = html;
+
+        // grafik
+        pcChart.data.labels = data.outcomes.map((o) => `PÇ${o.outcome_code}`);
+        pcChart.data.datasets[0].data = data.outcomes.map(
+            (o) => +o.realization_rate.toFixed(1)
+        );
+        pcChart.data.datasets[0].label = `${type}: ${name}`;
+        pcChart.options.plugins.title.text = `${type} Bazlı PÇ Oranları`;
+        pcChart.update();
+    } catch (err) {
+        showSnackbar(err.message);
+    }
+}
+
+// Buton event’leri
 btnOgrenci.addEventListener('click', async () => {
-    const studentNo = prompt('Öğrenci Numaranızı girin:');
-    if (!studentNo) return;
+    const sn = prompt('Öğrenci Numaranızı girin:');
+    if (!sn) return;
     await fetchAndRender(
-        `outcomes/realization/student/${encodeURIComponent(studentNo)}`,
+        `outcomes/realization/student/${encodeURIComponent(sn)}`,
         'Öğrenci',
-        studentNo
+        sn
     );
     setActiveButton(btnOgrenci);
 });
 
 btnDers.addEventListener('click', async () => {
-    const courseCode = prompt('Ders Kodunu girin:');
-    if (!courseCode) return;
+    const cc = prompt('Ders Kodunu girin:');
+    if (!cc) return;
     await fetchAndRender(
-        `outcomes/realization/course/${encodeURIComponent(courseCode)}`,
+        `outcomes/realization/course/${encodeURIComponent(cc)}`,
         'Ders',
-        courseCode
+        cc
     );
     setActiveButton(btnDers);
 });
 
 btnProgram.addEventListener('click', async () => {
-    await fetchAndRender(
-        `outcomes/realization/program`,
-        'Program',
-        'Tüm Program'
-    );
+    await fetchAndRender(`outcomes/realization/summary`, 'Program', 'Tüm PÇ');
     setActiveButton(btnProgram);
 });
 
-// Veri çekme ve render
-async function fetchAndRender(path, type, name) {
-    try {
-        const res = await fetch(`http://127.0.0.1:5000/api/${path}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.msg || 'Veri alınamadı');
-        renderTable(data.outcomes, type, name);
-        renderChart(data.outcomes, type, name);
-    } catch (err) {
-        alert(err.message);
-    }
-}
-
-// Tablo render
-function renderTable(outcomes, type, name) {
-    let html = `<h3>${type}: ${name}</h3>`;
-    html +=
-        `<table class="table table-striped"><thead><tr>` +
-        `<th>PÇ Kodu</th><th>Oran (%)</th></tr></thead><tbody>`;
-
-    outcomes.forEach((o) => {
-        html +=
-            `<tr><td>${o.outcome_code}</td>` +
-            `<td>${o.realization_rate.toFixed(1)}</td></tr>`;
-    });
-
-    html += `</tbody></table>`;
-    resultContainer.innerHTML = html;
-}
-
-// Grafik render
-function renderChart(outcomes, type, name) {
-    pcChart.data.labels = outcomes.map((o) => `PÇ${o.outcome_code}`);
-    pcChart.data.datasets[0].data = outcomes.map((o) =>
-        o.realization_rate.toFixed(1)
+// Buton stil yönetimi
+function setActiveButton(btn) {
+    [btnOgrenci, btnDers, btnProgram].forEach((b) =>
+        b.classList.remove('active')
     );
-    pcChart.data.datasets[0].label = `${type}: ${name}`;
-    pcChart.options.plugins.title.text = `${type} Bazlı PÇ Gerçekleme Oranları`;
-    pcChart.update();
+    btn.classList.add('active');
 }
 
-// Aktif buton stili
-function setActiveButton(activeBtn) {
-    [btnOgrenci, btnDers, btnProgram].forEach((btn) =>
-        btn.classList.remove('active')
-    );
-    activeBtn.classList.add('active');
-}
-
-// Sayfa ilk açıldığında program bazlı raporu göster
+// Sayfa açıldığında program özetini göster
 btnProgram.click();
