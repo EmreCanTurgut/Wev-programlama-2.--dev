@@ -1,3 +1,5 @@
+// dersY.js
+
 const form = document.getElementById('lessonForm');
 const tableBody = document.getElementById('studentTableBody');
 const searchInput = document.getElementById('searchInput');
@@ -13,7 +15,7 @@ async function loadCourses(filter = '') {
     try {
         const url = filter
             ? `${apiBase}/?code=${encodeURIComponent(filter)}`
-            : apiBase + '/';
+            : `${apiBase}/`;
         const res = await fetch(url, {
             headers: {
                 'Content-Type': 'application/json',
@@ -33,18 +35,23 @@ function renderTable(filter = '') {
     tableBody.innerHTML = '';
     courses
         .filter((c) =>
-            `${c.name} ${c.code} ${c.credit} ${c.instructor}`
+            `${c.name} ${c.code} ${c.credit} ${c.instructor} ${
+                Array.isArray(c.outcomes) ? c.outcomes.join(',') : ''
+            }`
                 .toLowerCase()
                 .includes(filter.toLowerCase())
         )
         .forEach((course) => {
-            if (!course.code) return;
+            const oc = Array.isArray(course.outcomes)
+                ? course.outcomes.join(',')
+                : '';
             const tr = document.createElement('tr');
             tr.innerHTML = `
         <td>${course.name}</td>
         <td>${course.code}</td>
         <td>${course.credit}</td>
         <td>${course.instructor}</td>
+        <td>${oc}</td>
         <td>
           <button class="btn btn-sm btn-warning" onclick="startEdit('${course.code}')">Düzenle</button>
           <button class="btn btn-sm btn-danger" onclick="deleteCourse('${course.code}')">Sil</button>
@@ -57,14 +64,12 @@ function renderTable(filter = '') {
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(form);
-    // Temel ders nesnesi
     const payload = {
         name: fd.get('ad'),
         code: fd.get('kod'),
         credit: parseInt(fd.get('kredi'), 10),
         instructor: fd.get('ogretimUyesi'),
     };
-    // Çıktı kodları alanını işle
     const ocStr = fd.get('outcomes')?.trim();
     if (ocStr) {
         const list = ocStr
@@ -87,7 +92,7 @@ form.addEventListener('submit', async (e) => {
                 body: JSON.stringify(payload),
             });
         } else {
-            res = await fetch(apiBase + '/', {
+            res = await fetch(`${apiBase}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -130,7 +135,9 @@ function startEdit(code) {
     form.elements['kod'].value = course.code;
     form.elements['kredi'].value = course.credit;
     form.elements['ogretimUyesi'].value = course.instructor;
-    // Not: outcomes back‑fill için ek kod yazılabilir
+    form.elements['outcomes'].value = Array.isArray(course.outcomes)
+        ? course.outcomes.join(',')
+        : '';
     editingCourseCode = code;
 }
 
@@ -140,19 +147,15 @@ function logout() {
     const modal = new bootstrap.Modal(document.getElementById('logoutModal'));
     modal.show();
 }
+
 function ConfirimLogout() {
     localStorage.clear();
     window.location.href = '../../Login/index.html';
 }
 
-// Basit snackbar gösterimi
+// Snackbar
 function showSnackbar(msg) {
     let sb = document.getElementById('snackbar');
-    if (!sb) {
-        sb = document.createElement('div');
-        sb.id = 'snackbar';
-        document.body.appendChild(sb);
-    }
     sb.textContent = msg;
     sb.classList.add('show');
     setTimeout(() => sb.classList.remove('show'), 3000);
