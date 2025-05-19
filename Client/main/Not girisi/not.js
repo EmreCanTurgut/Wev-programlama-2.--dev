@@ -124,7 +124,12 @@ function showSnackbar(message) {
   setTimeout(() => snackbar.classList.remove('show'), 3000);
 }
 
-// Logout işlemleri (değişmedi)
+
+// Userpanel (username display & logout)
+const userName = localStorage.getItem('user');
+const usernameDisplay = document.getElementById('usernameDisplay');
+if (usernameDisplay) usernameDisplay.textContent = userName || 'User';
+
 function logout() {
   const modal = new bootstrap.Modal(document.getElementById('logoutModal'));
   modal.show();
