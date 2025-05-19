@@ -128,3 +128,20 @@ function setActiveButton(btn) {
 
 // Sayfa açıldığında program özetini göster
 btnProgram.click();
+
+
+
+// Userpanel (username display & logout)
+const userName = localStorage.getItem('user');
+const usernameDisplay = document.getElementById('usernameDisplay');
+if (usernameDisplay) usernameDisplay.textContent = userName || 'User';
+
+function logout() {
+    const modal = new bootstrap.Modal(document.getElementById('logoutModal'));
+    modal.show();
+}
+
+function ConfirimLogout() {
+    localStorage.clear();
+    window.location.href = '../../Login/index.html';
+}
