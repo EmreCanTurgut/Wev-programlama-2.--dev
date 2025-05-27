@@ -1,4 +1,3 @@
-// ogrenci.js
 const form = document.getElementById('studentForm');
 const tableBody = document.getElementById('studentTableBody');
 const searchInput = document.getElementById('searchInput');
@@ -6,16 +5,13 @@ const searchInput = document.getElementById('searchInput');
 let students = [];
 let editingStudentNumber = null;
 
-// Get JWT from localStorage (assumes user logged in and token stored)
 const token = localStorage.getItem('token');
 const apiBase = 'http://127.0.0.1:5000/api/students/';
 
-// Initial load
 document.addEventListener('DOMContentLoaded', () => {
     loadStudents();
 });
 
-// Fetch all students
 async function loadStudents(filter = '') {
     try {
         const url = filter
@@ -62,7 +58,7 @@ function renderTable(filter = '') {
         });
 }
 
-// Create or update student on form submit
+
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(form);
@@ -76,7 +72,7 @@ form.addEventListener('submit', async (e) => {
     try {
         let res;
         if (editingStudentNumber) {
-            // Update
+            
             res = await fetch(`${apiBase}${editingStudentNumber}`, {
                 method: 'PUT',
                 headers: {
@@ -90,8 +86,7 @@ form.addEventListener('submit', async (e) => {
                 }),
             });
         } else {
-            // Create
-            res = await fetch(apiBase , {
+             res = await fetch(apiBase , {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,11 +99,11 @@ form.addEventListener('submit', async (e) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'API error');
 
-        // Reset form and state
+        
         form.reset();
         editingStudentNumber = null;
 
-        // Reload list
+    
         loadStudents(searchInput.value);
     } catch (err) {
         console.error(err);

@@ -1,16 +1,16 @@
 function openSection(section) {
   switch (section) {
     case "ogrenci":
-      window.location.href = "./Student/ogrenci.html"; // Öğrenci sayfasına yönlendir
+      window.location.href = "./Student/ogrenci.html"; 
       break;
     case "ders":
-      window.location.href = "./Ders Yonetimi/dersY.html"; // Ders sayfasına yönlendir
+      window.location.href = "./Ders Yonetimi/dersY.html"; 
       break;
     case "not":
-      window.location.href = "./Not girisi/not.html"; // Not girişi sayfasına yönlendir
+      window.location.href = "./Not girisi/not.html"; 
       break;
     case "pc":
-      window.location.href = "./Pc analiz/pc.html"; // Yeni PÇ analiz sayfası
+      window.location.href = "./Pc analiz/pc.html"; 
       break;
     default:
       alert("Bilinmeyen işlem");

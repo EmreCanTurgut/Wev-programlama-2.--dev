@@ -1,21 +1,17 @@
-// not.js
 
-// Token retrieval
 const token = localStorage.getItem('token');
 
-// Element references
+
 const noteForm      = document.getElementById('noteForm');
 const noteTableBody = document.getElementById('noteTableBody');
 const fileInput     = document.getElementById('fileInput');
 const snackbar      = document.getElementById('snackbar');
 
-// Grade API base (dikkat: sonuna slash eklendi)
+
 const gradesApiBase = 'http://127.0.0.1:5000/api/grades/grade/';
 
-// On load, fetch all grades
 document.addEventListener('DOMContentLoaded', loadNotes);
 
-// Fetch and render grades
 async function loadNotes() {
   try {
     const res = await fetch(gradesApiBase, {
@@ -77,7 +73,7 @@ noteForm.addEventListener('submit', async e => {
   }
 });
 
-// CSV/Excel bulk upload
+// CSV/Excel upload
 fileInput.addEventListener('change', async () => {
   const file = fileInput.files[0];
   if (!file) return;

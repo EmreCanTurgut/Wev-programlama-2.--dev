@@ -1,4 +1,3 @@
-// pc.js
 
 const toggleBtn = document.getElementById('toggleButton');
 const pcAciklamalar = document.getElementById('pc-aciklamalar');
@@ -21,7 +20,7 @@ function showSnackbar(msg) {
     }, 3000);
 }
 
-// Chart.js setup
+
 const pcChart = new Chart(ctx, {
     type: 'bar',
     data: { labels: [], datasets: [{ label: '', data: [] }] },
@@ -35,7 +34,6 @@ const pcChart = new Chart(ctx, {
     },
 });
 
-// Toggle tanımlar
 toggleBtn.addEventListener('click', () => {
     pcAciklamalar.classList.toggle('hidden');
     toggleBtn.textContent = pcAciklamalar.classList.contains('hidden')
@@ -43,7 +41,7 @@ toggleBtn.addEventListener('click', () => {
         : '📕 PÇ Tanımlarını Gizle';
 });
 
-// Ortak fetch + render fonksiyonu
+
 async function fetchAndRender(path, type, name) {
     try {
         const res = await fetch(`http://127.0.0.1:5000/api/${path}`, {
@@ -53,7 +51,7 @@ async function fetchAndRender(path, type, name) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.msg || 'Veri alınamadı');
 
-        // outcomes yoksa uyarı
+     
         if (!data.outcomes || !data.outcomes.length) {
             resultContainer.innerHTML = `<p class="text-center text-muted">Veri bulunamadı.</p>`;
             pcChart.data.labels = [];
@@ -62,7 +60,7 @@ async function fetchAndRender(path, type, name) {
             return;
         }
 
-        // tablo
+       
         let html = `<h3>${type}: ${name}</h3>
       <table class="table table-striped">
         <thead><tr><th>PÇ Kodu</th><th>Oran (%)</th></tr></thead>
@@ -77,7 +75,7 @@ async function fetchAndRender(path, type, name) {
         html += `</tbody></table>`;
         resultContainer.innerHTML = html;
 
-        // grafik
+        
         pcChart.data.labels = data.outcomes.map((o) => `PÇ${o.outcome_code}`);
         pcChart.data.datasets[0].data = data.outcomes.map(
             (o) => +o.realization_rate.toFixed(1)
@@ -90,7 +88,7 @@ async function fetchAndRender(path, type, name) {
     }
 }
 
-// Buton event’leri
+
 btnOgrenci.addEventListener('click', async () => {
     const sn = prompt('Öğrenci Numaranızı girin:');
     if (!sn) return;
@@ -126,12 +124,12 @@ function setActiveButton(btn) {
     btn.classList.add('active');
 }
 
-// Sayfa açıldığında program özetini göster
+
 btnProgram.click();
 
 
 
-// Userpanel (username display & logout)
+
 const userName = localStorage.getItem('user');
 const usernameDisplay = document.getElementById('usernameDisplay');
 if (usernameDisplay) usernameDisplay.textContent = userName || 'User';
