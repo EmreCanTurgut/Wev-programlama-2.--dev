@@ -63,8 +63,10 @@ noteForm.addEventListener('submit', async e => {
       },
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.msg || 'Not eklenemedi');
+    if(res.status === 404) {
+        showSnackbar('Ders bulunamadı ya da öğrenci numarası hatalı.');
+        return;
+    }
     noteForm.reset();
     loadNotes();
     showSnackbar('Not başarıyla kaydedildi.');

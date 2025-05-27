@@ -47,12 +47,11 @@ const register = async (event) => {
         const data = await response.json();
         console.log(data.msg);
         if (data.msg !== 'User registered successfully') {
-            //!! Emre buralara alert yerine component gelsin hem register hem login için
             showSnackbar(data.msg);
             return;
         }
 
-        // window.location.href = '/Client/Login/index.html';
+        window.location.href = '/Client/Login/index.html';
     } catch (error) {
         console.error('Error during register:', error);
     }
