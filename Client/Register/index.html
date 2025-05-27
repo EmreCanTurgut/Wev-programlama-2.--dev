@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign Up - Bunny Theme</title>
+  <title>Kayıt Ol - Tavşan Teması</title>
   <link rel="stylesheet" href="style.css" />
   <script src="app.js" defer></script>
 </head>
@@ -11,34 +11,32 @@
   <div class="container">
     <div class="form-container">
       <div class="logo">
-        <img src="../svg/undraw_easter-bunny_1v4n.svg" alt="Bunny Icon" />
+        <img src="../svg/undraw_easter-bunny_1v4n.svg" alt="Tavşan İkonu" />
       </div>
-      <h2>Let's Get Started!</h2>
-      <p>Create your account to join the fun!</p>
+      <h2>Haydi Başlayalım!</h2>
+      <p>Katılmak için hesabını oluştur!</p>
       <form id="signupForm">
-        <input type="email" placeholder="Email" id="email" required />
+        <input type="email" placeholder="E-posta" id="email" required />
         <div class="password-wrapper">
-          <input type="password" id="password" placeholder="Password" required />
+          <input type="password" id="password" placeholder="Şifre" required />
           <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
         </div>
         <div class="password-wrapper">
-          <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+          <input type="password" id="confirmPassword" placeholder="Şifreyi Onayla" required />
           <span class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</span>
         </div>
-        <button type="submit" id="register-btn">Sign Up</button>
+        <button type="submit" id="register-btn">Kayıt Ol</button>
       </form>
       <p class="footer-text">
-        Already have an account? <a href="../Login/index.html">Sign in</a>
+        Zaten bir hesabın var mı? <a href="../Login/index.html">Giriş yap</a>
       </p>
     </div>
     <div class="image-container">
-      <img src="../image/Tavşan.jpeg" alt="Cute Bunny" />
+      <img src="../image/Tavşan.jpeg" alt="Sevimli Tavşan" />
     </div>
   </div>
- 
 
-  <!-- The actual snackbar -->
-<div id="snackbar"></div>
-
+  <!-- Snackbar mesajı -->
+  <div id="snackbar"></div>
 </body>
 </html>
